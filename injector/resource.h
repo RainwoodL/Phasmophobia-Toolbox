@@ -1,0 +1,2 @@
+#pragma once
+#define IDI_PHASMOPHOBIA_INJECTOR 101

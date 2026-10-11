@@ -1,0 +1,49 @@
+# CMake and compiler output
+/out/
+/build/
+/cmake-build-*/
+/.vs/
+/.vscode/
+*.user
+*.suo
+*.VC.db
+*.VC.VC.opendb
+*.obj
+*.o
+*.pdb
+*.ilk
+*.lib
+*.exp
+
+# Python audit-tool caches
+__pycache__/
+*.py[cod]
+
+# Packaged/generated binaries
+/release/
+*.exe
+*.dll
+
+# Local reverse-engineering tools and generated game dumps. These files are
+# large, machine-generated, and may contain third-party game assemblies.
+/tools/Il2CppDumper/
+/dump.cs
+
+# Local configuration, credentials, and signing material
+.env
+.env.*
+!.env.example
+*.pem
+*.pfx
+*.p12
+*.key
+id_rsa
+id_ed25519
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.tmp
+*.log

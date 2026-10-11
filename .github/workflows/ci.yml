@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  repository-checks:
+    name: Hygiene and secret checks
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Check repository hygiene
+        shell: pwsh
+        run: ./scripts/check-hygiene.ps1
+
+      - name: Scan tracked text for secrets
+        shell: pwsh
+        run: ./scripts/check-security.ps1
+
+  build-and-test:
+    name: MSVC build and tests
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Build and run unit tests
+        shell: pwsh
+        run: ./scripts/test.ps1 -Configuration Debug
+
+  native-security-analysis:
+    name: MSVC native security analysis
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Analyze first-party targets
+        shell: pwsh
+        run: ./scripts/test.ps1 -Configuration Release -StaticAnalysis

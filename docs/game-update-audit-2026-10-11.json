@@ -1,0 +1,1648 @@
+{
+  "scope": "Compare latest dump contracts to the recorded 2026-10-08 dump. Static metadata only; runtime semantics and hooks require game testing.",
+  "baseline_report": "docs/game-update-audit-2026-10-08.json",
+  "old_dump": {
+    "path": "2026-10-08 dump (metadata contracts retained in baseline_report)",
+    "bytes": 55988347,
+    "sha256": "790eb6d6e72fa3641631ec1cf21dc5671327124b1be174e6f192be0626929003",
+    "types": 18737
+  },
+  "new_dump": {
+    "path": "dump.cs (local input, excluded from source control)",
+    "bytes": 55488331,
+    "sha256": "63286bbe5ea95875a86654d4bf1e57098615e3e90c15a8c454df45e9f9105120",
+    "types": 18737
+  },
+  "summary": {
+    "passed": 100,
+    "total": 100,
+    "categories": {
+      "game_field_layout": 25,
+      "method_signature": 30,
+      "named_field": 14,
+      "typed_field": 15,
+      "fixed_field": 10,
+      "value_type_layout": 2,
+      "enum_values": 4
+    }
+  },
+  "checks": [
+    {
+      "category": "game_field_layout",
+      "name": "GhostAI",
+      "passed": true,
+      "old_field_count": 62,
+      "new_field_count": 62,
+      "old_shape_sha256": "1a5ead2985b7fe825188a749608b387a24f113e4732fed11111f324112554ba9",
+      "new_shape_sha256": "1a5ead2985b7fe825188a749608b387a24f113e4732fed11111f324112554ba9"
+    },
+    {
+      "category": "game_field_layout",
+      "name": "LevelController",
+      "passed": true,
+      "old_field_count": 33,
+      "new_field_count": 33,
+      "old_shape_sha256": "5c1bfaf9ebce49fa31d43360c449cafc039817b1e7421f95d6e9dd3e85a20221",
+      "new_shape_sha256": "5c1bfaf9ebce49fa31d43360c449cafc039817b1e7421f95d6e9dd3e85a20221"
+    },
+    {
+      "category": "game_field_layout",
+      "name": "PCPropGrab",
+      "passed": true,
+      "old_field_count": 21,
+      "new_field_count": 21,
+      "old_shape_sha256": "0a8df6e783d0c69629b9cf409498471bda55648a3e60287ca8428b915dc85dcc",
+      "new_shape_sha256": "0a8df6e783d0c69629b9cf409498471bda55648a3e60287ca8428b915dc85dcc"
+    },
+    {
+      "category": "game_field_layout",
+      "name": "Network",
+      "passed": true,
+      "old_field_count": 34,
+      "new_field_count": 34,
+      "old_shape_sha256": "adee0cd2681d93d136f6fcae01d95974056aa0355f64ae3e1e723e21f42c5e54",
+      "new_shape_sha256": "adee0cd2681d93d136f6fcae01d95974056aa0355f64ae3e1e723e21f42c5e54"
+    },
+    {
+      "category": "game_field_layout",
+      "name": "Network.PlayerSpot",
+      "passed": true,
+      "old_field_count": 30,
+      "new_field_count": 30,
+      "old_shape_sha256": "9ddf499bbcb7225a907d7bb5ee01f60f1c58fd17ddc35340f4c158929c4e26bc",
+      "new_shape_sha256": "9ddf499bbcb7225a907d7bb5ee01f60f1c58fd17ddc35340f4c158929c4e26bc"
+    },
+    {
+      "category": "game_field_layout",
+      "name": "Player",
+      "passed": true,
+      "old_field_count": 42,
+      "new_field_count": 42,
+      "old_shape_sha256": "7abf4eee471f203733dda51cb1c1926161b927703bbe735475481d389463b815",
+      "new_shape_sha256": "7abf4eee471f203733dda51cb1c1926161b927703bbe735475481d389463b815"
+    },
+    {
+      "category": "game_field_layout",
+      "name": "LocalPlayer",
+      "passed": true,
+      "old_field_count": 37,
+      "new_field_count": 37,
+      "old_shape_sha256": "4e3744d23af3a54fa17b56b0cfa386e7e10a047dabee431f7e58f39bc11aee16",
+      "new_shape_sha256": "4e3744d23af3a54fa17b56b0cfa386e7e10a047dabee431f7e58f39bc11aee16"
+    },
+    {
+      "category": "game_field_layout",
+      "name": "NetworkedHeadMountedSocket",
+      "passed": true,
+      "old_field_count": 8,
+      "new_field_count": 8,
+      "old_shape_sha256": "1ed5230ac94cc5bd11e81274bd5bc3edf62721e03c7530a1b9dc4b6b9a49fde7",
+      "new_shape_sha256": "1ed5230ac94cc5bd11e81274bd5bc3edf62721e03c7530a1b9dc4b6b9a49fde7"
+    },
+    {
+      "category": "game_field_layout",
+      "name": "PlayerSanity",
+      "passed": true,
+      "old_field_count": 13,
+      "new_field_count": 13,
+      "old_shape_sha256": "1be22fc55ff7d8d2f1f267dacd70de5686cf1bf685ad6b3c98330f240a2fd219",
+      "new_shape_sha256": "1be22fc55ff7d8d2f1f267dacd70de5686cf1bf685ad6b3c98330f240a2fd219"
+    },
+    {
+      "category": "game_field_layout",
+      "name": "Difficulty",
+      "passed": true,
+      "old_field_count": 41,
+      "new_field_count": 41,
+      "old_shape_sha256": "84aeb2d2540cf6a0ecd401bb62a29fda3dabcbe98e6ed097c6f532bf00da3888",
+      "new_shape_sha256": "84aeb2d2540cf6a0ecd401bb62a29fda3dabcbe98e6ed097c6f532bf00da3888"
+    },
+    {
+      "category": "game_field_layout",
+      "name": "GameController",
+      "passed": true,
+      "old_field_count": 34,
+      "new_field_count": 34,
+      "old_shape_sha256": "eb1aa71d0437472f1f8281b8875aa1c297f15cacdbc347760d372fc35ed5aba9",
+      "new_shape_sha256": "eb1aa71d0437472f1f8281b8875aa1c297f15cacdbc347760d372fc35ed5aba9"
+    },
+    {
+      "category": "game_field_layout",
+      "name": "LevelStats",
+      "passed": true,
+      "old_field_count": 49,
+      "new_field_count": 49,
+      "old_shape_sha256": "7ec746e92fa2acd90b6179c277206d7763f0005dbd5f94ed11950ad059400af1",
+      "new_shape_sha256": "7ec746e92fa2acd90b6179c277206d7763f0005dbd5f94ed11950ad059400af1"
+    },
+    {
+      "category": "game_field_layout",
+      "name": "Crucifix",
+      "passed": true,
+      "old_field_count": 14,
+      "new_field_count": 14,
+      "old_shape_sha256": "d89a33d9e0880ff685c63cdc10d5b5e0b231f84fa7f4dfb8eb79e043b0649af3",
+      "new_shape_sha256": "d89a33d9e0880ff685c63cdc10d5b5e0b231f84fa7f4dfb8eb79e043b0649af3"
+    },
+    {
+      "category": "game_field_layout",
+      "name": "WhiteSage",
+      "passed": true,
+      "old_field_count": 14,
+      "new_field_count": 14,
+      "old_shape_sha256": "c3770f2757b5bb88e9440bfc070df9f78818790b7ef79906538ff0673bfc7699",
+      "new_shape_sha256": "c3770f2757b5bb88e9440bfc070df9f78818790b7ef79906538ff0673bfc7699"
+    },
+    {
+      "category": "game_field_layout",
+      "name": "OuijaBoard",
+      "passed": true,
+      "old_field_count": 27,
+      "new_field_count": 27,
+      "old_shape_sha256": "d1216269a5bd705a62393e443f91a31d8b90cd86b1e8c100e7d9625ad99220bc",
+      "new_shape_sha256": "d1216269a5bd705a62393e443f91a31d8b90cd86b1e8c100e7d9625ad99220bc"
+    },
+    {
+      "category": "game_field_layout",
+      "name": "Equipment",
+      "passed": true,
+      "old_field_count": 88,
+      "new_field_count": 88,
+      "old_shape_sha256": "6e8705f7d3668b8c28fe7d6ba7b437a318e7929847898ed143f7c532043ae6c2",
+      "new_shape_sha256": "6e8705f7d3668b8c28fe7d6ba7b437a318e7929847898ed143f7c532043ae6c2"
+    },
+    {
+      "category": "game_field_layout",
+      "name": "StoreItem",
+      "passed": true,
+      "old_field_count": 17,
+      "new_field_count": 17,
+      "old_shape_sha256": "4abe403de75fed14026b63aa29d261944ee66a94217ac741866a2b8e8f6b82cb",
+      "new_shape_sha256": "4abe403de75fed14026b63aa29d261944ee66a94217ac741866a2b8e8f6b82cb"
+    },
+    {
+      "category": "game_field_layout",
+      "name": "PhotonObjectInteract",
+      "passed": true,
+      "old_field_count": 53,
+      "new_field_count": 53,
+      "old_shape_sha256": "f18ca4fc0306b7faef80c5dae67a1bfc5f2f9607b4e4df175919f3bcd7fb21f1",
+      "new_shape_sha256": "f18ca4fc0306b7faef80c5dae67a1bfc5f2f9607b4e4df175919f3bcd7fb21f1"
+    },
+    {
+      "category": "game_field_layout",
+      "name": "Prop",
+      "passed": true,
+      "old_field_count": 54,
+      "new_field_count": 54,
+      "old_shape_sha256": "a852fd70d1e8a4bbe6eaba0e9974d0de6c078678d49b5584f931a260e4b4dbf2",
+      "new_shape_sha256": "a852fd70d1e8a4bbe6eaba0e9974d0de6c078678d49b5584f931a260e4b4dbf2"
+    },
+    {
+      "category": "game_field_layout",
+      "name": "PCCanvas",
+      "passed": true,
+      "old_field_count": 12,
+      "new_field_count": 12,
+      "old_shape_sha256": "b3224032d1fe9566536eba002b604e11053c11e2b92387bd26b092e9abf17aca",
+      "new_shape_sha256": "b3224032d1fe9566536eba002b604e11053c11e2b92387bd26b092e9abf17aca"
+    },
+    {
+      "category": "game_field_layout",
+      "name": "LightSwitch",
+      "passed": true,
+      "old_field_count": 28,
+      "new_field_count": 28,
+      "old_shape_sha256": "52f3cd57d3fc9f63c02e4050a158f966085e5c773c5fb1b30b27d8ab47a6dc75",
+      "new_shape_sha256": "52f3cd57d3fc9f63c02e4050a158f966085e5c773c5fb1b30b27d8ab47a6dc75"
+    },
+    {
+      "category": "game_field_layout",
+      "name": "Door",
+      "passed": true,
+      "old_field_count": 54,
+      "new_field_count": 54,
+      "old_shape_sha256": "8c6b7868f3f4d490a3b9b1cef7e24ab3f9dd815dd877920edf818b70febb0681",
+      "new_shape_sha256": "8c6b7868f3f4d490a3b9b1cef7e24ab3f9dd815dd877920edf818b70febb0681"
+    },
+    {
+      "category": "game_field_layout",
+      "name": "Drawer",
+      "passed": true,
+      "old_field_count": 13,
+      "new_field_count": 13,
+      "old_shape_sha256": "cbe271d8931843c7b19130811b2f5a818fd8d34b2416fc3170ead3d13f25d730",
+      "new_shape_sha256": "cbe271d8931843c7b19130811b2f5a818fd8d34b2416fc3170ead3d13f25d730"
+    },
+    {
+      "category": "game_field_layout",
+      "name": "PlayerStamina",
+      "passed": true,
+      "old_field_count": 18,
+      "new_field_count": 18,
+      "old_shape_sha256": "6f79a0d0133b11212cd7d6eda02c4b9eaba06e6867c826b0561cad2f979e4b42",
+      "new_shape_sha256": "6f79a0d0133b11212cd7d6eda02c4b9eaba06e6867c826b0561cad2f979e4b42"
+    },
+    {
+      "category": "game_field_layout",
+      "name": "LevelValues",
+      "passed": true,
+      "old_field_count": 27,
+      "new_field_count": 27,
+      "old_shape_sha256": "c76dfa3d390b4ef4f44666e5088b8c3361b8e3a60058b55dac315d33ec47f4a3",
+      "new_shape_sha256": "c76dfa3d390b4ef4f44666e5088b8c3361b8e3a60058b55dac315d33ec47f4a3"
+    },
+    {
+      "category": "method_signature",
+      "name": "PCPropGrab.Update/0",
+      "passed": true,
+      "old": [
+        "void Update()"
+      ],
+      "new": [
+        "void Update()"
+      ]
+    },
+    {
+      "category": "method_signature",
+      "name": "PlayerSanity.Update/0",
+      "passed": true,
+      "old": [
+        "void Update()"
+      ],
+      "new": [
+        "void Update()"
+      ]
+    },
+    {
+      "category": "method_signature",
+      "name": "GhostAI.Hunting/3",
+      "passed": true,
+      "old": [
+        "void Hunting(bool, int, PhotonMessageInfo)"
+      ],
+      "new": [
+        "void Hunting(bool, int, PhotonMessageInfo)"
+      ]
+    },
+    {
+      "category": "method_signature",
+      "name": "Crucifix.CrucifixUseNetworked/2",
+      "passed": true,
+      "old": [
+        "void CrucifixUseNetworked(bool, PhotonMessageInfo)"
+      ],
+      "new": [
+        "void CrucifixUseNetworked(bool, PhotonMessageInfo)"
+      ]
+    },
+    {
+      "category": "method_signature",
+      "name": "WhiteSage.UseNetworked/2",
+      "passed": true,
+      "old": [
+        "void UseNetworked(bool, PhotonMessageInfo)"
+      ],
+      "new": [
+        "void UseNetworked(bool, PhotonMessageInfo)"
+      ]
+    },
+    {
+      "category": "method_signature",
+      "name": "OuijaBoard.PlayMessageSequence/2",
+      "passed": true,
+      "old": [
+        "void PlayMessageSequence(string, PhotonMessageInfo)"
+      ],
+      "new": [
+        "void PlayMessageSequence(string, PhotonMessageInfo)"
+      ]
+    },
+    {
+      "category": "method_signature",
+      "name": "Network.get_Instance/0",
+      "passed": true,
+      "old": [
+        "static Network get_Instance()"
+      ],
+      "new": [
+        "static Network get_Instance()"
+      ]
+    },
+    {
+      "category": "method_signature",
+      "name": "LevelStats.get_Instance/0",
+      "passed": true,
+      "old": [
+        "static LevelStats get_Instance()"
+      ],
+      "new": [
+        "static LevelStats get_Instance()"
+      ]
+    },
+    {
+      "category": "method_signature",
+      "name": "LevelValues.get_Instance/0",
+      "passed": true,
+      "old": [
+        "static LevelValues get_Instance()"
+      ],
+      "new": [
+        "static LevelValues get_Instance()"
+      ]
+    },
+    {
+      "category": "method_signature",
+      "name": "GameController.GetAveragePlayerInsanity/0",
+      "passed": true,
+      "old": [
+        "float GetAveragePlayerInsanity()"
+      ],
+      "new": [
+        "float GetAveragePlayerInsanity()"
+      ]
+    },
+    {
+      "category": "method_signature",
+      "name": "UnityEngine.Component.GetComponentInParent/2",
+      "passed": true,
+      "old": [
+        "Component GetComponentInParent(Type, bool)"
+      ],
+      "new": [
+        "Component GetComponentInParent(Type, bool)"
+      ]
+    },
+    {
+      "category": "method_signature",
+      "name": "UnityEngine.Component.get_transform/0",
+      "passed": true,
+      "old": [
+        "Transform get_transform()"
+      ],
+      "new": [
+        "Transform get_transform()"
+      ]
+    },
+    {
+      "category": "method_signature",
+      "name": "UnityEngine.Transform.get_position_Injected/1",
+      "passed": true,
+      "old": [
+        "void get_position_Injected(out Vector3)"
+      ],
+      "new": [
+        "void get_position_Injected(out Vector3)"
+      ]
+    },
+    {
+      "category": "method_signature",
+      "name": "UnityEngine.Camera.WorldToScreenPoint_Injected/3",
+      "passed": true,
+      "old": [
+        "void WorldToScreenPoint_Injected(ref Vector3, Camera.MonoOrStereoscopicEye, out Vector3)"
+      ],
+      "new": [
+        "void WorldToScreenPoint_Injected(ref Vector3, Camera.MonoOrStereoscopicEye, out Vector3)"
+      ]
+    },
+    {
+      "category": "method_signature",
+      "name": "UnityEngine.Camera.get_scaledPixelWidth/0",
+      "passed": true,
+      "old": [
+        "int get_scaledPixelWidth()"
+      ],
+      "new": [
+        "int get_scaledPixelWidth()"
+      ]
+    },
+    {
+      "category": "method_signature",
+      "name": "UnityEngine.Camera.get_scaledPixelHeight/0",
+      "passed": true,
+      "old": [
+        "int get_scaledPixelHeight()"
+      ],
+      "new": [
+        "int get_scaledPixelHeight()"
+      ]
+    },
+    {
+      "category": "method_signature",
+      "name": "UnityEngine.Camera.get_pixelWidth/0",
+      "passed": true,
+      "old": [
+        "int get_pixelWidth()"
+      ],
+      "new": [
+        "int get_pixelWidth()"
+      ]
+    },
+    {
+      "category": "method_signature",
+      "name": "UnityEngine.Camera.get_pixelHeight/0",
+      "passed": true,
+      "old": [
+        "int get_pixelHeight()"
+      ],
+      "new": [
+        "int get_pixelHeight()"
+      ]
+    },
+    {
+      "category": "method_signature",
+      "name": "UnityEngine.AI.NavMeshAgent.get_speed/0",
+      "passed": true,
+      "old": [
+        "float get_speed()"
+      ],
+      "new": [
+        "float get_speed()"
+      ]
+    },
+    {
+      "category": "method_signature",
+      "name": "Photon.Pun.MonoBehaviourPun.get_photonView/0",
+      "passed": true,
+      "old": [
+        "PhotonView get_photonView()"
+      ],
+      "new": [
+        "PhotonView get_photonView()"
+      ]
+    },
+    {
+      "category": "method_signature",
+      "name": "Photon.Pun.PhotonView.get_IsMine/0",
+      "passed": true,
+      "old": [
+        "bool get_IsMine()"
+      ],
+      "new": [
+        "bool get_IsMine()"
+      ]
+    },
+    {
+      "category": "method_signature",
+      "name": "Photon.Pun.PhotonNetwork.get_IsMasterClient/0",
+      "passed": true,
+      "old": [
+        "static bool get_IsMasterClient()"
+      ],
+      "new": [
+        "static bool get_IsMasterClient()"
+      ]
+    },
+    {
+      "category": "method_signature",
+      "name": "Photon.Pun.PhotonNetwork.get_InRoom/0",
+      "passed": true,
+      "old": [
+        "static bool get_InRoom()"
+      ],
+      "new": [
+        "static bool get_InRoom()"
+      ]
+    },
+    {
+      "category": "method_signature",
+      "name": "Photon.Pun.PhotonNetwork.get_MasterClient/0",
+      "passed": true,
+      "old": [
+        "static Player get_MasterClient()"
+      ],
+      "new": [
+        "static Player get_MasterClient()"
+      ]
+    },
+    {
+      "category": "method_signature",
+      "name": "Photon.Pun.PhotonNetwork.RaiseEvent/4",
+      "passed": true,
+      "old": [
+        "static bool RaiseEvent(byte, object, RaiseEventOptions, SendOptions)"
+      ],
+      "new": [
+        "static bool RaiseEvent(byte, object, RaiseEventOptions, SendOptions)"
+      ]
+    },
+    {
+      "category": "method_signature",
+      "name": "Photon.Realtime.Player.get_ActorNumber/0",
+      "passed": true,
+      "old": [
+        "int get_ActorNumber()"
+      ],
+      "new": [
+        "int get_ActorNumber()"
+      ]
+    },
+    {
+      "category": "method_signature",
+      "name": "Photon.Realtime.LoadBalancingClient.OnEvent/1",
+      "passed": true,
+      "old": [
+        "void OnEvent(EventData)"
+      ],
+      "new": [
+        "void OnEvent(EventData)"
+      ]
+    },
+    {
+      "category": "method_signature",
+      "name": "Photon.Realtime.RaiseEventOptions..ctor/0",
+      "passed": true,
+      "old": [
+        "void .ctor()"
+      ],
+      "new": [
+        "void .ctor()"
+      ]
+    },
+    {
+      "category": "method_signature",
+      "name": "ExitGames.Client.Photon.EventData.get_CustomData/0",
+      "passed": true,
+      "old": [
+        "object get_CustomData()"
+      ],
+      "new": [
+        "object get_CustomData()"
+      ]
+    },
+    {
+      "category": "method_signature",
+      "name": "ExitGames.Client.Photon.EventData.get_Sender/0",
+      "passed": true,
+      "old": [
+        "int get_Sender()"
+      ],
+      "new": [
+        "int get_Sender()"
+      ]
+    },
+    {
+      "category": "named_field",
+      "name": "LevelStats.timeSpentInvestigating",
+      "passed": true,
+      "old": [
+        [
+          "float",
+          "timeSpentInvestigating",
+          52,
+          false
+        ]
+      ],
+      "new": [
+        [
+          "float",
+          "timeSpentInvestigating",
+          52,
+          false
+        ]
+      ]
+    },
+    {
+      "category": "named_field",
+      "name": "Crucifix.useCount",
+      "passed": true,
+      "old": [
+        [
+          "int",
+          "useCount",
+          1040,
+          false
+        ]
+      ],
+      "new": [
+        [
+          "int",
+          "useCount",
+          1040,
+          false
+        ]
+      ]
+    },
+    {
+      "category": "named_field",
+      "name": "StoreItem.equipmentType",
+      "passed": true,
+      "old": [
+        [
+          "StoreItem.<obf>",
+          "equipmentType",
+          24,
+          false
+        ]
+      ],
+      "new": [
+        [
+          "StoreItem.<obf>",
+          "equipmentType",
+          24,
+          false
+        ]
+      ]
+    },
+    {
+      "category": "named_field",
+      "name": "StoreItem.tier",
+      "passed": true,
+      "old": [
+        [
+          "<obf>",
+          "tier",
+          28,
+          false
+        ]
+      ],
+      "new": [
+        [
+          "<obf>",
+          "tier",
+          28,
+          false
+        ]
+      ]
+    },
+    {
+      "category": "named_field",
+      "name": "Network.PlayerSpot.photonPlayer",
+      "passed": true,
+      "old": [
+        [
+          "Player",
+          "photonPlayer",
+          24,
+          false
+        ]
+      ],
+      "new": [
+        [
+          "Player",
+          "photonPlayer",
+          24,
+          false
+        ]
+      ]
+    },
+    {
+      "category": "named_field",
+      "name": "Network.PlayerSpot.player",
+      "passed": true,
+      "old": [
+        [
+          "Player",
+          "player",
+          56,
+          false
+        ]
+      ],
+      "new": [
+        [
+          "Player",
+          "player",
+          56,
+          false
+        ]
+      ]
+    },
+    {
+      "category": "named_field",
+      "name": "Network.PlayerSpot.accountName",
+      "passed": true,
+      "old": [
+        [
+          "string",
+          "accountName",
+          72,
+          false
+        ]
+      ],
+      "new": [
+        [
+          "string",
+          "accountName",
+          72,
+          false
+        ]
+      ]
+    },
+    {
+      "category": "named_field",
+      "name": "NetworkedHeadMountedSocket.modelHeadSpot",
+      "passed": true,
+      "old": [
+        [
+          "Transform",
+          "modelHeadSpot",
+          48,
+          false
+        ]
+      ],
+      "new": [
+        [
+          "Transform",
+          "modelHeadSpot",
+          48,
+          false
+        ]
+      ]
+    },
+    {
+      "category": "named_field",
+      "name": "Difficulty.sanityMonitor",
+      "passed": true,
+      "old": [
+        [
+          "bool",
+          "sanityMonitor",
+          144,
+          false
+        ]
+      ],
+      "new": [
+        [
+          "bool",
+          "sanityMonitor",
+          144,
+          false
+        ]
+      ]
+    },
+    {
+      "category": "named_field",
+      "name": "Photon.Realtime.Player.actorNumber",
+      "passed": true,
+      "old": [
+        [
+          "int",
+          "actorNumber",
+          24,
+          false
+        ]
+      ],
+      "new": [
+        [
+          "int",
+          "actorNumber",
+          24,
+          false
+        ]
+      ]
+    },
+    {
+      "category": "named_field",
+      "name": "Photon.Realtime.Player.IsLocal",
+      "passed": true,
+      "old": [
+        [
+          "bool",
+          "IsLocal",
+          28,
+          false
+        ]
+      ],
+      "new": [
+        [
+          "bool",
+          "IsLocal",
+          28,
+          false
+        ]
+      ]
+    },
+    {
+      "category": "named_field",
+      "name": "Photon.Realtime.Player.nickName",
+      "passed": true,
+      "old": [
+        [
+          "string",
+          "nickName",
+          32,
+          false
+        ]
+      ],
+      "new": [
+        [
+          "string",
+          "nickName",
+          32,
+          false
+        ]
+      ]
+    },
+    {
+      "category": "named_field",
+      "name": "Photon.Realtime.RaiseEventOptions.Receivers",
+      "passed": true,
+      "old": [
+        [
+          "ReceiverGroup",
+          "Receivers",
+          32,
+          false
+        ]
+      ],
+      "new": [
+        [
+          "ReceiverGroup",
+          "Receivers",
+          32,
+          false
+        ]
+      ]
+    },
+    {
+      "category": "named_field",
+      "name": "ExitGames.Client.Photon.EventData.Code",
+      "passed": true,
+      "old": [
+        [
+          "byte",
+          "Code",
+          16,
+          false
+        ]
+      ],
+      "new": [
+        [
+          "byte",
+          "Code",
+          16,
+          false
+        ]
+      ]
+    },
+    {
+      "category": "typed_field",
+      "name": "LevelController -> GhostAI",
+      "passed": true,
+      "old": [
+        "0x40"
+      ],
+      "new": [
+        "0x40"
+      ]
+    },
+    {
+      "category": "typed_field",
+      "name": "GhostAI -> NavMeshAgent",
+      "passed": true,
+      "old": [
+        "0x40"
+      ],
+      "new": [
+        "0x40"
+      ]
+    },
+    {
+      "category": "typed_field",
+      "name": "Network -> LocalPlayer",
+      "passed": true,
+      "old": [
+        "0x30"
+      ],
+      "new": [
+        "0x30"
+      ]
+    },
+    {
+      "category": "typed_field",
+      "name": "Network -> Player",
+      "passed": true,
+      "old": [
+        "0x28"
+      ],
+      "new": [
+        "0x28"
+      ]
+    },
+    {
+      "category": "typed_field",
+      "name": "Network -> List<Network.PlayerSpot>",
+      "passed": true,
+      "old": [
+        "0x38"
+      ],
+      "new": [
+        "0x38"
+      ]
+    },
+    {
+      "category": "typed_field",
+      "name": "LocalPlayer -> Camera",
+      "passed": true,
+      "old": [
+        "0x30"
+      ],
+      "new": [
+        "0x30"
+      ]
+    },
+    {
+      "category": "typed_field",
+      "name": "LocalPlayer -> PlayerStamina",
+      "passed": true,
+      "old": [
+        "0xa0"
+      ],
+      "new": [
+        "0xa0"
+      ]
+    },
+    {
+      "category": "typed_field",
+      "name": "Player -> PlayerSanity",
+      "passed": true,
+      "old": [
+        "0x90"
+      ],
+      "new": [
+        "0x90"
+      ]
+    },
+    {
+      "category": "typed_field",
+      "name": "Player -> NetworkedHeadMountedSocket",
+      "passed": true,
+      "old": [
+        "0x78"
+      ],
+      "new": [
+        "0x78"
+      ]
+    },
+    {
+      "category": "typed_field",
+      "name": "PCPropGrab -> PCCanvas",
+      "passed": true,
+      "old": [
+        "0x28"
+      ],
+      "new": [
+        "0x28"
+      ]
+    },
+    {
+      "category": "typed_field",
+      "name": "PCPropGrab -> Collider",
+      "passed": true,
+      "old": [
+        "0x80",
+        "0xd8"
+      ],
+      "new": [
+        "0x80",
+        "0xd8"
+      ]
+    },
+    {
+      "category": "typed_field",
+      "name": "PCPropGrab -> List<PhotonObjectInteract>",
+      "passed": true,
+      "old": [
+        "0x50"
+      ],
+      "new": [
+        "0x50"
+      ]
+    },
+    {
+      "category": "typed_field",
+      "name": "PCPropGrab -> int",
+      "passed": true,
+      "old": [
+        "0x58"
+      ],
+      "new": [
+        "0x58"
+      ]
+    },
+    {
+      "category": "typed_field",
+      "name": "Equipment -> StoreItem",
+      "passed": true,
+      "old": [
+        "0x180"
+      ],
+      "new": [
+        "0x180"
+      ]
+    },
+    {
+      "category": "typed_field",
+      "name": "PhotonObjectInteract -> Prop",
+      "passed": true,
+      "old": [
+        "0x108"
+      ],
+      "new": [
+        "0x108"
+      ]
+    },
+    {
+      "category": "fixed_field",
+      "name": "GhostAI+0x30",
+      "passed": true,
+      "old": [
+        "GhostAI.<obf>"
+      ],
+      "new": [
+        "GhostAI.<obf>"
+      ]
+    },
+    {
+      "category": "fixed_field",
+      "name": "GhostAI+0xf3",
+      "passed": true,
+      "old": [
+        "bool"
+      ],
+      "new": [
+        "bool"
+      ]
+    },
+    {
+      "category": "fixed_field",
+      "name": "Player+0x28",
+      "passed": true,
+      "old": [
+        "bool"
+      ],
+      "new": [
+        "bool"
+      ]
+    },
+    {
+      "category": "fixed_field",
+      "name": "Player+0x88",
+      "passed": true,
+      "old": [
+        "Transform"
+      ],
+      "new": [
+        "Transform"
+      ]
+    },
+    {
+      "category": "fixed_field",
+      "name": "Network+0x38",
+      "passed": true,
+      "old": [
+        "List<Network.PlayerSpot>"
+      ],
+      "new": [
+        "List<Network.PlayerSpot>"
+      ]
+    },
+    {
+      "category": "fixed_field",
+      "name": "LevelValues+0x38",
+      "passed": true,
+      "old": [
+        "Difficulty"
+      ],
+      "new": [
+        "Difficulty"
+      ]
+    },
+    {
+      "category": "fixed_field",
+      "name": "PlayerSanity+0x30",
+      "passed": true,
+      "old": [
+        "float"
+      ],
+      "new": [
+        "float"
+      ]
+    },
+    {
+      "category": "fixed_field",
+      "name": "PlayerStamina+0x40",
+      "passed": true,
+      "old": [
+        "float"
+      ],
+      "new": [
+        "float"
+      ]
+    },
+    {
+      "category": "fixed_field",
+      "name": "PCCanvas+0x88",
+      "passed": true,
+      "old": [
+        "PCCanvas.<obf>"
+      ],
+      "new": [
+        "PCCanvas.<obf>"
+      ]
+    },
+    {
+      "category": "fixed_field",
+      "name": "PCPropGrab+0x50",
+      "passed": true,
+      "old": [
+        "List<PhotonObjectInteract>"
+      ],
+      "new": [
+        "List<PhotonObjectInteract>"
+      ]
+    },
+    {
+      "category": "value_type_layout",
+      "name": "Photon.Pun.PhotonMessageInfo",
+      "passed": true,
+      "old_field_count": 3,
+      "new_field_count": 3,
+      "old_shape_sha256": "4db1e4ab75c94345348fa041377b060274a651bd3037638982b29485e7eb1e91",
+      "new_shape_sha256": "4db1e4ab75c94345348fa041377b060274a651bd3037638982b29485e7eb1e91"
+    },
+    {
+      "category": "value_type_layout",
+      "name": "ExitGames.Client.Photon.SendOptions",
+      "passed": true,
+      "old_field_count": 5,
+      "new_field_count": 5,
+      "old_shape_sha256": "7db666f3e5f8be984903fe67c5616cf734e3e5c430ae7298c9f4621c31cdc968",
+      "new_shape_sha256": "7db666f3e5f8be984903fe67c5616cf734e3e5c430ae7298c9f4621c31cdc968"
+    },
+    {
+      "category": "enum_values",
+      "name": "GhostAI+0x30 enum",
+      "passed": true,
+      "old": [
+        [
+          "idle",
+          "0"
+        ],
+        [
+          "wander",
+          "1"
+        ],
+        [
+          "hunting",
+          "2"
+        ],
+        [
+          "favouriteRoom",
+          "3"
+        ],
+        [
+          "light",
+          "4"
+        ],
+        [
+          "door",
+          "5"
+        ],
+        [
+          "throwing",
+          "6"
+        ],
+        [
+          "fusebox",
+          "7"
+        ],
+        [
+          "appear",
+          "8"
+        ],
+        [
+          "doorKnock",
+          "9"
+        ],
+        [
+          "windowKnock",
+          "10"
+        ],
+        [
+          "carAlarm",
+          "11"
+        ],
+        [
+          "flicker",
+          "12"
+        ],
+        [
+          "cctv",
+          "13"
+        ],
+        [
+          "randomEvent",
+          "14"
+        ],
+        [
+          "GhostAbility",
+          "15"
+        ],
+        [
+          "mannequin",
+          "16"
+        ],
+        [
+          "teleportObject",
+          "17"
+        ],
+        [
+          "interact",
+          "18"
+        ],
+        [
+          "summoningCircle",
+          "19"
+        ],
+        [
+          "musicBox",
+          "20"
+        ],
+        [
+          "dots",
+          "21"
+        ],
+        [
+          "salt",
+          "22"
+        ],
+        [
+          "ignite",
+          "23"
+        ]
+      ],
+      "new": [
+        [
+          "idle",
+          "0"
+        ],
+        [
+          "wander",
+          "1"
+        ],
+        [
+          "hunting",
+          "2"
+        ],
+        [
+          "favouriteRoom",
+          "3"
+        ],
+        [
+          "light",
+          "4"
+        ],
+        [
+          "door",
+          "5"
+        ],
+        [
+          "throwing",
+          "6"
+        ],
+        [
+          "fusebox",
+          "7"
+        ],
+        [
+          "appear",
+          "8"
+        ],
+        [
+          "doorKnock",
+          "9"
+        ],
+        [
+          "windowKnock",
+          "10"
+        ],
+        [
+          "carAlarm",
+          "11"
+        ],
+        [
+          "flicker",
+          "12"
+        ],
+        [
+          "cctv",
+          "13"
+        ],
+        [
+          "randomEvent",
+          "14"
+        ],
+        [
+          "GhostAbility",
+          "15"
+        ],
+        [
+          "mannequin",
+          "16"
+        ],
+        [
+          "teleportObject",
+          "17"
+        ],
+        [
+          "interact",
+          "18"
+        ],
+        [
+          "summoningCircle",
+          "19"
+        ],
+        [
+          "musicBox",
+          "20"
+        ],
+        [
+          "dots",
+          "21"
+        ],
+        [
+          "salt",
+          "22"
+        ],
+        [
+          "ignite",
+          "23"
+        ]
+      ]
+    },
+    {
+      "category": "enum_values",
+      "name": "PCCanvas+0x88 enum",
+      "passed": true,
+      "old": [
+        [
+          "none",
+          "0"
+        ],
+        [
+          "active",
+          "1"
+        ],
+        [
+          "locked",
+          "2"
+        ],
+        [
+          "light",
+          "3"
+        ],
+        [
+          "off",
+          "4"
+        ]
+      ],
+      "new": [
+        [
+          "none",
+          "0"
+        ],
+        [
+          "active",
+          "1"
+        ],
+        [
+          "locked",
+          "2"
+        ],
+        [
+          "light",
+          "3"
+        ],
+        [
+          "off",
+          "4"
+        ]
+      ]
+    },
+    {
+      "category": "enum_values",
+      "name": "StoreItem+0x18 enum",
+      "passed": true,
+      "old": [
+        [
+          "Crucifix",
+          "0"
+        ],
+        [
+          "DOTS",
+          "1"
+        ],
+        [
+          "EMFReader",
+          "2"
+        ],
+        [
+          "Firelight",
+          "3"
+        ],
+        [
+          "Flashlight",
+          "4"
+        ],
+        [
+          "GhostWriting",
+          "5"
+        ],
+        [
+          "HeadMounted",
+          "6"
+        ],
+        [
+          "Igniter",
+          "7"
+        ],
+        [
+          "Incense",
+          "8"
+        ],
+        [
+          "MotionSensor",
+          "9"
+        ],
+        [
+          "ParabolicMicrophone",
+          "10"
+        ],
+        [
+          "PhotoCamera",
+          "11"
+        ],
+        [
+          "Salt",
+          "12"
+        ],
+        [
+          "SanityMedication",
+          "13"
+        ],
+        [
+          "SoundRecorder",
+          "14"
+        ],
+        [
+          "SoundSensor",
+          "15"
+        ],
+        [
+          "SpiritBox",
+          "16"
+        ],
+        [
+          "Thermometer",
+          "17"
+        ],
+        [
+          "Tripod",
+          "18"
+        ],
+        [
+          "UVLight",
+          "19"
+        ],
+        [
+          "VideoCamera",
+          "20"
+        ]
+      ],
+      "new": [
+        [
+          "Crucifix",
+          "0"
+        ],
+        [
+          "DOTS",
+          "1"
+        ],
+        [
+          "EMFReader",
+          "2"
+        ],
+        [
+          "Firelight",
+          "3"
+        ],
+        [
+          "Flashlight",
+          "4"
+        ],
+        [
+          "GhostWriting",
+          "5"
+        ],
+        [
+          "HeadMounted",
+          "6"
+        ],
+        [
+          "Igniter",
+          "7"
+        ],
+        [
+          "Incense",
+          "8"
+        ],
+        [
+          "MotionSensor",
+          "9"
+        ],
+        [
+          "ParabolicMicrophone",
+          "10"
+        ],
+        [
+          "PhotoCamera",
+          "11"
+        ],
+        [
+          "Salt",
+          "12"
+        ],
+        [
+          "SanityMedication",
+          "13"
+        ],
+        [
+          "SoundRecorder",
+          "14"
+        ],
+        [
+          "SoundSensor",
+          "15"
+        ],
+        [
+          "SpiritBox",
+          "16"
+        ],
+        [
+          "Thermometer",
+          "17"
+        ],
+        [
+          "Tripod",
+          "18"
+        ],
+        [
+          "UVLight",
+          "19"
+        ],
+        [
+          "VideoCamera",
+          "20"
+        ]
+      ]
+    },
+    {
+      "category": "enum_values",
+      "name": "StoreItem+0x1c enum",
+      "passed": true,
+      "old": [
+        [
+          "One",
+          "0"
+        ],
+        [
+          "Two",
+          "1"
+        ],
+        [
+          "Three",
+          "2"
+        ]
+      ],
+      "new": [
+        [
+          "One",
+          "0"
+        ],
+        [
+          "Two",
+          "1"
+        ],
+        [
+          "Three",
+          "2"
+        ]
+      ]
+    }
+  ],
+  "installed_game": {
+    "installed_steam_build": "25811160",
+    "required_exports": 20,
+    "matched_exports": 20,
+    "missing_exports": [],
+    "game_assembly_sha256": "e300eda993f2479922628f1b44f59e60c156c240f5a07c7289c4bd0fe4b790c8",
+    "metadata_sha256": "a1d282afc5a7dada6617f30f0b8a595a8bc5ce32f27cd81baf38903711c68253"
+  },
+  "date": "2026-10-11",
+  "limitations": [
+    "Matching normalized metadata cannot prove obfuscated field semantics.",
+    "No game process was launched for runtime acceptance."
+  ]
+}
