@@ -1,7 +1,8 @@
 param(
     [string]$GameExecutable = 'D:\steam\steamapps\common\Phasmophobia\Phasmophobia.exe',
     [switch]$PackageOnly,
-    [string]$DumpPath = ''
+    [string]$DumpPath = '',
+    [switch]$SkipBuild
 )
 
 Set-StrictMode -Version Latest
@@ -140,6 +141,7 @@ function Invoke-EmbedGame {
         [string]$GameExecutable,
         [switch]$PackageOnly,
         [string]$DumpPath = '',
+        [switch]$SkipBuild,
         [string]$RepositoryRoot = (Split-Path -Parent $PSScriptRoot)
     )
     $gameExecutable = [IO.Path]::GetFullPath($GameExecutable)
@@ -173,7 +175,9 @@ function Invoke-EmbedGame {
     $backup = $null
     New-Item -ItemType Directory -Path $stageDirectory -Force | Out-Null
     try {
-        Build-EmbedArtifacts $RepositoryRoot $buildDirectory $releaseDirectory
+        if (-not $SkipBuild) {
+            Build-EmbedArtifacts $RepositoryRoot $buildDirectory $releaseDirectory
+        }
         $payload = Join-Path $releaseDirectory 'embedded\payload.dll'
         $embedder = Join-Path $releaseDirectory 'tools\pe_embed.exe'
         $standalone = Join-Path $releaseDirectory 'standalone\PhasmophobiaInjector.exe'
@@ -255,5 +259,5 @@ function Invoke-EmbedGame {
 
 # Dot-sourcing exposes the workflow to the isolated script regression tests.
 if ($MyInvocation.InvocationName -ne '.') {
-    Invoke-EmbedGame -GameExecutable $GameExecutable -PackageOnly:$PackageOnly -DumpPath $DumpPath
+    Invoke-EmbedGame -GameExecutable $GameExecutable -PackageOnly:$PackageOnly -DumpPath $DumpPath -SkipBuild:$SkipBuild
 }

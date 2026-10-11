@@ -25,6 +25,7 @@ target_compile_options(pe_embed PRIVATE /utf-8 /GS /sdl /permissive-)
 toolsbox_enable_project_checks(pe_embed)
 set_target_properties(pe_embed PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${TOOLSBOX_ARTIFACT_DIR}/tools"
+    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
 )
 
 if(BUILD_TESTING)

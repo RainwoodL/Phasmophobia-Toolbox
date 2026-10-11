@@ -25,13 +25,17 @@
 
 ## 使用
 
-1. 从源码构建 Release，或使用仓库发布的构建产物。
+1. 从[发行页面](https://github.com/RainwoodL/Phasmophobia-Toolbox/releases/latest)下载 `Injector` 注入包或 `Embedded` 嵌入包，也可从源码构建 Release。
 2. 启动游戏，进入主菜单。
 3. 运行 `release/standalone/PhasmophobiaInjector.exe`，等待工具箱启动提示。
 4. 游戏内按 **U** 打开菜单。遇到权限提示时以管理员身份运行注入器。
 
 独立注入器内嵌原始 `payload.dll`，单独分发 EXE 即可。
 设置保存在 `%LOCALAPPDATA%/GhostRoomTools/settings.bin`。
+
+`Embedded` 发行包双击 `install-embedded.cmd` 并输入本机原版游戏 EXE 路径即可安装，无需编译。
+安装后从 Steam 启动游戏即可自动加载；详细安装、更新与恢复步骤见[嵌入包说明](docs/release-embedded.md)。
+注入包说明见[注入包说明](docs/release-injector.md)。
 
 ## 构建与验证
 
@@ -42,7 +46,7 @@
 ./scripts/check-all.ps1 -Configuration Release
 ```
 
-该命令执行仓库卫生检查、秘密扫描、构建、**6 项 CTest** 和 **7 个嵌入脚本回归场景**。
+该命令执行仓库卫生检查、秘密扫描、构建、**6 项 CTest** 和 **9 个嵌入脚本回归场景**。
 Release 产物位于 `release/`；Debug 中间文件与产物位于 `out/`。
 
 ```powershell
@@ -52,6 +56,14 @@ Release 产物位于 `release/`；Debug 中间文件与产物位于 `out/`。
 ```
 
 GitHub Actions 对 push 和 pull request 执行仓库检查、Debug 构建与测试、MSVC 原生静态分析。
+
+提交源码后，生成两种发行 ZIP、源码提交清单与 SHA-256 校验文件：
+
+```powershell
+./scripts/package-release.ps1 -Version v2026.10.11
+```
+
+发行文件位于 `out/release-packages/v2026.10.11/`，按清单选取文件，避免将旧包、游戏 EXE 或本机 dump 带入发行包。
 
 ## 游戏更新后核对
 

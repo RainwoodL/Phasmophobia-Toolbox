@@ -27,6 +27,10 @@ Settings are stored in `%LOCALAPPDATA%/GhostRoomTools/settings.bin`.
 
 ## Build and run
 
+Download the `Injector` or `Embedded` ZIP from [Releases](https://github.com/RainwoodL/Phasmophobia-Toolbox/releases/latest).
+The embedded package includes compiled tools: run `install-embedded.cmd` and enter your original game EXE path; no compiler is required.
+See the [injector guide](docs/release-injector.md) and [embedded guide](docs/release-embedded.md), each with an English section.
+
 Requires Windows 10/11 x64, Visual Studio 2022 or newer with Desktop development with C++, Windows SDK, CMake 3.15+ and Ninja.
 PowerShell scripts locate and load the MSVC x64 environment automatically.
 
@@ -34,7 +38,7 @@ PowerShell scripts locate and load the MSVC x64 environment automatically.
 ./scripts/check-all.ps1 -Configuration Release
 ```
 
-This checks repository hygiene and secrets, builds the project, runs **6 CTest tests** and **7 embedding regression scenarios**.
+This checks repository hygiene and secrets, builds the project, runs **6 CTest tests** and **9 embedding regression scenarios**.
 Release outputs are placed in `release/`. Debug outputs and build intermediates are in `out/`.
 
 Start the game, enter the main menu, run `release/standalone/PhasmophobiaInjector.exe`, then press **U** in game.
@@ -47,6 +51,9 @@ Run as administrator when the injector reports an access problem.
 ```
 
 GitHub Actions runs repository checks, Debug build/tests and MSVC native static analysis.
+
+After committing source changes, run `./scripts/package-release.ps1 -Version v2026.10.11` to build both ZIPs and SHA-256 manifests.
+Packages are written to `out/release-packages/v2026.10.11/` from an explicit file list.
 
 ## Game updates
 

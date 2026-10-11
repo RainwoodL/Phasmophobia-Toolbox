@@ -142,6 +142,27 @@ try {
     Assert-EmbedTest ($manifest.Deployed -and -not $manifest.PackageOnly) 'deployed manifest mode is wrong'
     $passed++
 
+    $fixture = New-EmbedFixture 'prebuilt'
+    $gameHash = (Get-FileHash -LiteralPath $fixture.Game).Hash
+    $buildsBefore = $script:buildCount
+    $result = Invoke-EmbedGame -GameExecutable $fixture.Game -RepositoryRoot $fixture.Repository -SkipBuild
+    Assert-EmbedTest ($script:buildCount -eq $buildsBefore) 'prebuilt deployment invoked the compiler'
+    Assert-EmbedTest ((Get-FileHash -LiteralPath $fixture.Game).Hash -eq $result.EmbeddedSHA256) 'prebuilt deployment differs from package'
+    Assert-EmbedTest ((Get-FileHash -LiteralPath $result.Backup).Hash -eq $gameHash) 'prebuilt deployment lost the original'
+    $passed++
+
+    $fixture = New-EmbedFixture 'prebuilt-missing-payload'
+    $before = Get-FixtureHashes $fixture
+    Remove-Item -LiteralPath (Join-Path $fixture.Repository 'release\embedded\payload.dll')
+    $buildsBefore = $script:buildCount
+    $rejected = $false
+    try { Invoke-EmbedGame -GameExecutable $fixture.Game -RepositoryRoot $fixture.Repository -SkipBuild | Out-Null }
+    catch { $rejected = $_.Exception.Message -like '*Required Release artifact*' }
+    Assert-EmbedTest $rejected 'missing prebuilt payload must be rejected'
+    Assert-EmbedTest ($script:buildCount -eq $buildsBefore) 'missing prebuilt artifact invoked the compiler'
+    Assert-EmbedTest ((Get-FixtureHashes $fixture) -eq $before) 'missing prebuilt artifact changed the game or package'
+    $passed++
+
     $fixture = New-EmbedFixture 'source-change'
     $before = Get-FixtureHashes $fixture
     $script:changeSource = $true
