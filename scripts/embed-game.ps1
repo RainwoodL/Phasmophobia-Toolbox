@@ -176,7 +176,7 @@ function Invoke-EmbedGame {
     New-Item -ItemType Directory -Path $stageDirectory -Force | Out-Null
     try {
         if (-not $SkipBuild) {
-            Build-EmbedArtifacts $RepositoryRoot $buildDirectory $releaseDirectory
+            Build-EmbedArtifacts $RepositoryRoot $buildDirectory $releaseDirectory | Out-Host
         }
         $payload = Join-Path $releaseDirectory 'embedded\payload.dll'
         $embedder = Join-Path $releaseDirectory 'tools\pe_embed.exe'
@@ -186,7 +186,7 @@ function Invoke-EmbedGame {
                 throw "Required Release artifact is missing: $required"
             }
         }
-        New-EmbedCandidate $embedder $gameExecutable $payload $stageCandidate $runtimePayload
+        New-EmbedCandidate $embedder $gameExecutable $payload $stageCandidate $runtimePayload | Out-Host
         if ((Get-Item -LiteralPath $stageCandidate).Length -le (Get-Item -LiteralPath $gameExecutable).Length -or
             -not (Test-EmbedPeSection -Path $stageCandidate)) {
             throw 'Embedded candidate failed size or .tbx section validation.'

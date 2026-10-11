@@ -9,6 +9,7 @@ New-Item -ItemType Directory -Path $testRoot -Force | Out-Null
 $script:buildCount = 0
 $script:embedMode = 'success'
 $script:changeSource = $false
+$script:emitNativeOutput = $false
 $passed = 0
 
 function Assert-EmbedTest {
@@ -79,6 +80,7 @@ function New-EmbedCandidate {
     if ($script:embedMode -eq 'fail') { throw 'Simulated embedder failure.' }
     $data = New-TestPe ($script:embedMode -ne 'invalid')
     [IO.File]::WriteAllBytes($OutputExe, $data)
+    if ($script:emitNativeOutput) { Write-Output 'Fixture embedder output' }
 }
 function Get-Process {
     param([string]$Name, [string]$ErrorAction)
@@ -115,7 +117,10 @@ try {
     $fixture = New-EmbedFixture 'package-only'
     $gameHash = (Get-FileHash -LiteralPath $fixture.Game).Hash
     $runtimeHash = (Get-FileHash -LiteralPath $fixture.Runtime).Hash
+    $script:emitNativeOutput = $true
     $result = Invoke-EmbedGame -GameExecutable $fixture.Game -RepositoryRoot $fixture.Repository -PackageOnly
+    $script:emitNativeOutput = $false
+    Assert-EmbedTest ($result -is [pscustomobject]) 'embedder console output contaminated the workflow result'
     $manifest = Get-Content -LiteralPath $result.Manifest -Raw | ConvertFrom-Json
     Assert-EmbedTest ((Get-FileHash -LiteralPath $fixture.Game).Hash -eq $gameHash) 'PackageOnly changed the game'
     Assert-EmbedTest ((Get-FileHash -LiteralPath $fixture.Runtime).Hash -eq $runtimeHash) 'PackageOnly changed runtime DLL'
