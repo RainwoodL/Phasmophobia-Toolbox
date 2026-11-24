@@ -18,6 +18,8 @@ from collections import Counter
 from pathlib import Path
 
 
+# October 2026 baseline. Keep the historical comparisons reproducible when
+# the HUD or the game changes.
 GAME_TYPES = (
     "GhostAI", "LevelController", "PCPropGrab", "Network", "Network.PlayerSpot",
     "Player", "LocalPlayer", "NetworkedHeadMountedSocket", "PlayerSanity",
@@ -26,8 +28,7 @@ GAME_TYPES = (
     "PCCanvas", "LightSwitch", "Door", "Drawer", "PlayerStamina", "LevelValues",
 )
 
-# Namespace, class, method, parameter count. Keep this manifest aligned with
-# FindMethod / Resolve calls in payload; there are no fixed method RVAs.
+# Namespace, class, method, parameter count.
 METHODS = (
     ("", "PCPropGrab", "Update", 0),
     ("", "PlayerSanity", "Update", 0),
@@ -91,7 +92,7 @@ TYPED_FIELDS = (
     ("PhotonObjectInteract", "Prop", 1),
 )
 
-# Fixed or fallback offsets actually used in payload. A same-type replacement
+# Fixed or fallback offsets used in the October payload. A same-type replacement
 # at the same offset is indistinguishable here and still needs runtime checks.
 FIXED_FIELDS = (
     ("GhostAI", 0x30, "GhostAI.<obf>"), ("GhostAI", 0xF3, "bool"),
@@ -106,6 +107,15 @@ ABI_TYPES = (("Photon.Pun", "PhotonMessageInfo"),
              ("ExitGames.Client.Photon", "SendOptions"))
 ENUM_FIELDS = (("GhostAI", 0x30), ("PCCanvas", 0x88),
                ("StoreItem", 0x18), ("StoreItem", 0x1C))
+
+# Equipment names in the order used by the HUD labels. Older game versions
+# have the same first 21 values and omit DowsingRods.
+HUD_EQUIPMENT = (
+    "Crucifix", "DOTS", "EMFReader", "Firelight", "Flashlight", "GhostWriting",
+    "HeadMounted", "Igniter", "Incense", "MotionSensor", "ParabolicMicrophone",
+    "PhotoCamera", "Salt", "SanityMedication", "SoundRecorder", "SoundSensor",
+    "SpiritBox", "Thermometer", "Tripod", "UVLight", "VideoCamera", "DowsingRods",
+)
 
 HEADER = re.compile(r"(?m)^[^\r\n]*// TypeDefIndex:\s*(\d+)[^\r\n]*\r?$")
 TYPE = re.compile(r"\b(class|struct|enum|interface)\s+([^\s:]+)")
@@ -175,7 +185,8 @@ def read_dump(path: Path) -> tuple[dict, dict]:
                 continue
             parameters = split_parameters(method.group(2))
             methods.append({"name": tokens[-1], "return": " ".join(tokens[:-1]),
-                            "parameters": parameters, "static": "static" in qualifiers})
+                            "parameters": parameters, "static": "static" in qualifiers,
+                            "public": "public" in qualifiers})
         result[(namespace, declaration.group(2))] = {
             "kind": declaration.group(1), "index": int(header.group(1)),
             "fields": fields, "methods": methods,
@@ -254,6 +265,60 @@ def check(old: dict, new: dict) -> list[dict]:
     return checks
 
 
+def check_hud_metadata(dump: dict) -> dict[str, list]:
+    """Check the data lookups and Unity coordinate APIs used by the current HUD."""
+    checks = {"hud_data": [], "current_unity_consumers": []}
+
+    def record(group, name, expected, actual):
+        checks[group].append({"name": name, "passed": expected == actual,
+                              "expected": expected, "actual": actual})
+
+    def instance_fields(namespace, owner):
+        return [field for field in dump.get((namespace, owner), {}).get("fields", [])
+                if not field["static"]]
+
+    for owner, field_type in (("LocalPlayer", "PlayerStamina"), ("Player", "PlayerSanity"),
+                              ("Player", "NetworkedHeadMountedSocket"), ("LocalPlayer", "Player")):
+        fields = instance_fields("", owner)
+        record("hud_data", f"{owner} -> {field_type}", 1, sum(f["type"] == field_type for f in fields))
+
+    for owner, name, field_type in (("Crucifix", "useCount", "int"),
+                                    ("NetworkedHeadMountedSocket", "modelHeadSpot", "Transform")):
+        record("hud_data", f"{owner}.{name}", [field_type],
+               [f["type"] for f in instance_fields("", owner) if f["name"] == name])
+
+    for owner, name, arity, expected in (
+        ("Component", "get_transform", 0, "public Transform get_transform()"),
+        ("Transform", "get_position", 0, "public Vector3 get_position()"),
+        ("Camera", "WorldToScreenPoint", 1, "public Vector3 WorldToScreenPoint(Vector3)"),
+    ):
+        methods = dump.get(("UnityEngine", owner), {}).get("methods", [])
+        # FindMethod selects by name and arity. An additional overload with the
+        # same arity must be reviewed even when the expected one still exists.
+        candidates = [("public " if m["public"] else "") + method_shape(m) for m in methods
+                      if m["name"] == name and len(m["parameters"]) == arity]
+        record("current_unity_consumers", f"UnityEngine.{owner}.{name}/{arity}", [expected], candidates)
+
+    vector3 = dump.get(("UnityEngine", "Vector3"), {})
+    record("current_unity_consumers", "UnityEngine.Vector3",
+           ["struct", [("x", "float", 0), ("y", "float", 4), ("z", "float", 8)]],
+           [vector3.get("kind"), [(f["name"], f["type"], f["offset"])
+                                  for f in instance_fields("UnityEngine", "Vector3")]])
+
+    for name, member_names in (("equipmentType", HUD_EQUIPMENT), ("tier", ("One", "Two", "Three"))):
+        fields = [f for f in instance_fields("", "StoreItem") if f["name"] == name]
+        enum = dump.get(("", fields[0]["type"]), {}) if len(fields) == 1 else {}
+        storage = [f["type"] for f in enum.get("fields", []) if f["name"] == "value__" and not f["static"]]
+        members = sorted(enum.get("enum_values", []))
+        expected = [(member, str(index)) for index, member in enumerate(member_names)]
+        # The legacy game cannot supply the appended equipment value.
+        if name == "equipmentType" and members == sorted(expected[:-1]):
+            expected = expected[:-1]
+        record("hud_data", f"StoreItem.{name} enum", ["enum", ["int"], sorted(expected)],
+               [enum.get("kind"), storage, members])
+    return checks
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("old_dump", type=Path)
@@ -264,6 +329,7 @@ def main() -> int:
         old, old_meta = read_dump(args.old_dump)
         new, new_meta = read_dump(args.new_dump)
         checks = check(old, new)
+        hud_metadata = check_hud_metadata(new)
     except (OSError, UnicodeError, ValueError) as exc:
         parser.error(str(exc))
     failures = [item for item in checks if not item["passed"]]
@@ -274,7 +340,10 @@ def main() -> int:
               "old_dump": old_meta, "new_dump": new_meta,
               "summary": {"passed": len(checks) - len(failures), "total": len(checks),
                           "categories": dict(Counter(c["category"] for c in checks))},
-              "type_index_changes": index_changes, "checks": checks}
+              "type_index_changes": index_changes, "checks": checks,
+              "current_dump_checks": {
+                  group: {"passed": sum(item["passed"] for item in items), "total": len(items), "checks": items}
+                  for group, items in hud_metadata.items()}}
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -284,9 +353,17 @@ def main() -> int:
         print("  old:", json.dumps(item["old"], ensure_ascii=True))
         print("  new:", json.dumps(item["new"], ensure_ascii=True))
     print(f"TypeDefIndex changes (informational): {len(index_changes)}")
+    for group, summary in report["current_dump_checks"].items():
+        print(f"{summary['passed']}/{summary['total']} [{group}] checks passed in the new dump")
+        for item in summary["checks"]:
+            if not item["passed"]:
+                print(f"REVIEW [{group}] {item['name']}")
+                print("  expected:", json.dumps(item["expected"], ensure_ascii=True))
+                print("  actual:", json.dumps(item["actual"], ensure_ascii=True))
     if args.output:
         print(f"Report: {args.output.resolve()}")
-    return 1 if failures else 0
+    required = hud_metadata["hud_data"] + hud_metadata["current_unity_consumers"]
+    return 1 if failures or any(not item["passed"] for item in required) else 0
 
 
 if __name__ == "__main__":

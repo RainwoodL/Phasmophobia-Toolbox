@@ -43,7 +43,7 @@ struct InventoryTextOffset {
 };
 
 InventorySlotState ClassifyInventorySlot(InventorySlotEvidence evidence);
-InventorySlotText InventorySlotTextForState(InventorySlotState state);
+InventorySlotText InventorySlotTextForState(InventorySlotState state, int equipmentType = -1);
 bool operator==(const InventoryTextOffset& lhs, const InventoryTextOffset& rhs);
 std::array<InventoryTextOffset, 4> InventoryTextOutlineOffsets();
 bool ShouldHighlightInventorySlot(int activeIndex, int slotIndex);

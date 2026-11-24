@@ -7,6 +7,7 @@
 #include "il2cpp_runtime.h"
 #include "settings_store.h"
 #include "settings_ui.h"
+#include "unity_coordinates.h"
 
 #include "imgui.h"
 #include "imgui_internal.h"
@@ -17,7 +18,6 @@
 #include <cstdint>
 #include <mutex>
 #include <string>
-#include <type_traits>
 
 namespace ghost_distance {
 namespace {
@@ -27,18 +27,12 @@ constexpr long long kSnapshotMaximumAgeMs = 500;
 constexpr float kGhostSpeedGap = 20.0f;
 constexpr const char* kWindowId = "##ghost_distance";
 
-struct Vector3 { float x, y, z; };
 using GetInstanceFn = void* (*)(const il2cpp_runtime::Method*);
-using GetObjectFn = void* (*)(void*, const il2cpp_runtime::Method*);
-using GetPositionFn = void (*)(void*, Vector3*, const il2cpp_runtime::Method*);
 
 struct Api {
     GetInstanceFn networkInstance = nullptr;
     const il2cpp_runtime::Method* networkMethod = nullptr;
-    GetObjectFn getTransform = nullptr;
-    const il2cpp_runtime::Method* transformMethod = nullptr;
-    GetPositionFn getPosition = nullptr;
-    const il2cpp_runtime::Method* positionMethod = nullptr;
+    unity_coordinates::PositionReader positions;
 };
 
 struct Metadata {
@@ -66,19 +60,6 @@ std::int64_t NowMilliseconds() {
         std::chrono::steady_clock::now().time_since_epoch()).count();
 }
 
-template <typename T>
-bool ResolveMethod(T& function, const il2cpp_runtime::Method*& method,
-                   const char* namespaceName, const char* className,
-                   const char* methodName, int parameterCount, bool requireGameAssembly) {
-    method = il2cpp_runtime::FindMethod(
-        il2cpp_runtime::FindClass(namespaceName, className), methodName, parameterCount);
-    void* entry = il2cpp_runtime::GetMethodEntry(method);
-    if (!entry || !il2cpp_runtime::IsExecutable(entry) ||
-        (requireGameAssembly && !il2cpp_runtime::IsInGameAssembly(entry))) return false;
-    function = reinterpret_cast<std::decay_t<decltype(function)>>(entry);
-    return true;
-}
-
 void ResolveApi() {
     g_nextResolve = std::chrono::steady_clock::now() + std::chrono::seconds(2);
     Api api{};
@@ -86,13 +67,12 @@ void ResolveApi() {
     auto* networkClass = il2cpp_runtime::FindClass("", "Network");
     auto* localPlayerClass = il2cpp_runtime::FindClass("", "LocalPlayer");
     auto* playerClass = il2cpp_runtime::FindClass("", "Player");
+    api.networkMethod = il2cpp_runtime::FindMethod(networkClass, "get_Instance", 0);
+    void* networkEntry = il2cpp_runtime::GetMethodEntry(api.networkMethod);
+    if (il2cpp_runtime::IsInGameAssembly(networkEntry) && il2cpp_runtime::IsExecutable(networkEntry))
+        api.networkInstance = reinterpret_cast<GetInstanceFn>(networkEntry);
     const bool resolved =
-        ResolveMethod(api.networkInstance, api.networkMethod, "", "Network",
-                      "get_Instance", 0, true) &&
-        ResolveMethod(api.getTransform, api.transformMethod, "UnityEngine",
-                      "Component", "get_transform", 0, false) &&
-        ResolveMethod(api.getPosition, api.positionMethod, "UnityEngine",
-                      "Transform", "get_position_Injected", 1, false) &&
+        api.networkInstance && api.positions.Resolve() &&
         il2cpp_runtime::FindInstanceFieldByType(
             networkClass, localPlayerClass, metadata.networkLocalPlayerOffset) &&
         il2cpp_runtime::FindInstanceFieldByType(
@@ -100,14 +80,6 @@ void ResolveApi() {
     metadata.valid = resolved;
     g_api = api;
     g_metadata = metadata;
-}
-
-bool PositionOf(std::uintptr_t component, Vector3& value) {
-    if (!component || !g_api.getTransform || !g_api.getPosition) return false;
-    void* transform = g_api.getTransform(reinterpret_cast<void*>(component), g_api.transformMethod);
-    if (!transform) return false;
-    g_api.getPosition(transform, &value, g_api.positionMethod);
-    return std::isfinite(value.x) && std::isfinite(value.y) && std::isfinite(value.z);
 }
 
 void Publish(float meters) {
@@ -190,9 +162,10 @@ void OnGameThreadUpdate() {
         ClearSnapshot();
         return;
     }
-    Vector3 playerPosition{};
-    Vector3 ghostPosition{};
-    if (!PositionOf(player, playerPosition) || !PositionOf(ghost.instance, ghostPosition)) {
+    unity_coordinates::Vector3 playerPosition{};
+    unity_coordinates::Vector3 ghostPosition{};
+    if (!g_api.positions.ReadComponent(reinterpret_cast<void*>(player), playerPosition) ||
+        !g_api.positions.ReadComponent(reinterpret_cast<void*>(ghost.instance), ghostPosition)) {
         ClearSnapshot();
         return;
     }

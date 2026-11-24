@@ -7,21 +7,34 @@
 #include <cstdio>
 
 namespace feature_logic {
+namespace {
+
+constexpr std::array kEquipmentNames = {
+    u8"十字架", u8"激光投影仪", u8"EMF读取仪", u8"火光", u8"手电筒",
+    u8"鬼魂笔记", u8"头戴设备", u8"点火器", u8"熏香", u8"运动传感器",
+    u8"收音器", u8"照相机", u8"盐", u8"理智药物", u8"录音机",
+    u8"声音传感器", u8"通灵盒", u8"温度计", u8"三脚架", u8"紫外线灯", u8"摄像机",
+    u8"探灵杆"
+};
+constexpr int kDowsingRods = 21;
+
+} // namespace
 
 InventorySlotState ClassifyInventorySlot(InventorySlotEvidence evidence) {
     if (!evidence.slotPresent) return InventorySlotState::Empty;
     if (!evidence.propValid) return InventorySlotState::Unknown;
     if (!evidence.equipmentFound) return InventorySlotState::NonEquipment;
-    if (!evidence.storeItemValid || evidence.equipmentType < 0 || evidence.equipmentType >= 21 ||
+    if (!evidence.storeItemValid || evidence.equipmentType < 0 ||
+        evidence.equipmentType >= static_cast<int>(kEquipmentNames.size()) ||
         evidence.tier < 0 || evidence.tier >= 3)
         return InventorySlotState::Unknown;
     return InventorySlotState::Equipment;
 }
 
-InventorySlotText InventorySlotTextForState(InventorySlotState state) {
-    return state == InventorySlotState::NonEquipment
-        ? InventorySlotText{u8"可互", u8"动物"}
-        : InventorySlotText{};
+InventorySlotText InventorySlotTextForState(InventorySlotState state, int equipmentType) {
+    if (state == InventorySlotState::NonEquipment) return {u8"可互", u8"动物"};
+    if (state == InventorySlotState::Equipment && equipmentType == kDowsingRods) return {u8"探灵", u8"杆"};
+    return {};
 }
 
 bool operator==(const InventoryTextOffset& lhs, const InventoryTextOffset& rhs) {
@@ -125,14 +138,8 @@ NormalizedPoint NormalizeScreenPoint(float x, float y, float width, float height
 }
 
 std::string FormatEquipmentLabel(int equipmentType, int tier, bool showTier) {
-    const std::array<const char*, 21> names = {
-        u8"十字架", u8"激光投影仪", u8"EMF读取仪", u8"火光", u8"手电筒",
-        u8"鬼魂笔记", u8"头戴设备", u8"点火器", u8"熏香", u8"运动传感器",
-        u8"收音器", u8"照相机", u8"盐", u8"理智药物", u8"录音机",
-        u8"声音传感器", u8"通灵盒", u8"温度计", u8"三脚架", u8"紫外线灯", u8"摄像机"
-    };
-    if (equipmentType < 0 || equipmentType >= static_cast<int>(names.size())) return {};
-    std::string result = names[static_cast<std::size_t>(equipmentType)];
+    if (equipmentType < 0 || equipmentType >= static_cast<int>(kEquipmentNames.size())) return {};
+    std::string result = kEquipmentNames[static_cast<std::size_t>(equipmentType)];
     if (!showTier) return result;
     const std::array<const char*, 3> tiers = {u8"一级", u8"二级", u8"三级"};
     if (tier >= 0 && tier < static_cast<int>(tiers.size()))

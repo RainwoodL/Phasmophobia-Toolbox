@@ -8,6 +8,7 @@
 #include "il2cpp_runtime.h"
 #include "settings_store.h"
 #include "settings_ui.h"
+#include "unity_coordinates.h"
 
 #include "imgui.h"
 #include "imgui_internal.h"
@@ -19,7 +20,6 @@
 #include <cstdint>
 #include <deque>
 #include <mutex>
-#include <type_traits>
 
 namespace ghost_speed_display {
 namespace {
@@ -29,8 +29,6 @@ constexpr const char* kWindowId = "##ghost_speed_display";
 using GetSpeedFn = float (*)(void*, const il2cpp_runtime::Method*);
 using GetObjectFn = void* (*)(void*, const il2cpp_runtime::Method*);
 using GetBoolFn = bool (*)(void*, const il2cpp_runtime::Method*);
-struct Vector3 { float x, y, z; };
-using GetPositionFn = void (*)(void*, Vector3*, const il2cpp_runtime::Method*);
 struct MovementSegment { float distance; float seconds; };
 
 const il2cpp_runtime::Method* g_speedMethod = nullptr;
@@ -39,17 +37,14 @@ const il2cpp_runtime::Method* g_photonViewMethod = nullptr;
 GetObjectFn g_getPhotonView = nullptr;
 const il2cpp_runtime::Method* g_isMineMethod = nullptr;
 GetBoolFn g_getIsMine = nullptr;
-const il2cpp_runtime::Method* g_transformMethod = nullptr;
-GetObjectFn g_getTransform = nullptr;
-const il2cpp_runtime::Method* g_positionMethod = nullptr;
-GetPositionFn g_getPosition = nullptr;
+unity_coordinates::PositionReader g_positionReader{};
 std::mutex g_snapshotMutex;
 float g_lastSpeed = 0.0f;
 float g_displaySpeed = 0.0f;
 std::chrono::steady_clock::time_point g_nextDisplayUpdate{};
 std::uint64_t g_generation = 0;
 std::uintptr_t g_sampledGhost = 0;
-Vector3 g_previousPosition{};
+unity_coordinates::Vector3 g_previousPosition{};
 std::chrono::steady_clock::time_point g_previousPositionTime{};
 bool g_positionInitialized = false;
 bool g_smoothedSpeedInitialized = false;
@@ -62,25 +57,37 @@ std::atomic<bool> g_enabled{false};
 std::uintptr_t g_navMeshAgentOffset = 0;
 bool g_resetPositionRequested = false;
 
-bool ResolveApi() {
-    if (g_navMeshAgentOffset && g_getSpeed && g_getPhotonView && g_getIsMine && g_getTransform && g_getPosition) return true;
-    auto* ghostClass = il2cpp_runtime::FindClass("", "GhostAI");
-    auto* agentClass = il2cpp_runtime::FindClass("UnityEngine.AI", "NavMeshAgent");
-    if (!il2cpp_runtime::FindInstanceFieldByType(ghostClass, agentClass, g_navMeshAgentOffset)) return false;
-    const auto resolve = [](auto& function, const il2cpp_runtime::Method*& method,
-                            const char* namespaceName, const char* className, const char* methodName, int parameterCount) {
-        method = il2cpp_runtime::FindMethod(
-            il2cpp_runtime::FindClass(namespaceName, className), methodName, parameterCount);
-        void* entry = il2cpp_runtime::GetMethodEntry(method);
-        if (!entry || !il2cpp_runtime::IsInGameAssembly(entry) || !il2cpp_runtime::IsExecutable(entry)) return false;
-        function = reinterpret_cast<std::decay_t<decltype(function)>>(entry);
-        return true;
-    };
-    return resolve(g_getSpeed, g_speedMethod, "UnityEngine.AI", "NavMeshAgent", "get_speed", 0) &&
-        resolve(g_getPhotonView, g_photonViewMethod, "Photon.Pun", "MonoBehaviourPun", "get_photonView", 0) &&
-        resolve(g_getIsMine, g_isMineMethod, "Photon.Pun", "PhotonView", "get_IsMine", 0) &&
-        resolve(g_getTransform, g_transformMethod, "UnityEngine", "Component", "get_transform", 0) &&
-        resolve(g_getPosition, g_positionMethod, "UnityEngine", "Transform", "get_position_Injected", 1);
+template <typename Getter>
+bool ResolveGetter(Getter& getter, const il2cpp_runtime::Method*& method,
+                   const char* namespaceName, const char* className, const char* methodName) {
+    if (getter) return true;
+    method = il2cpp_runtime::FindMethod(il2cpp_runtime::FindClass(namespaceName, className), methodName, 0);
+    void* entry = il2cpp_runtime::GetMethodEntry(method);
+    if (!entry || !il2cpp_runtime::IsInGameAssembly(entry) || !il2cpp_runtime::IsExecutable(entry)) return false;
+    getter = reinterpret_cast<Getter>(entry);
+    return true;
+}
+
+bool ReadNativeSpeed(std::uintptr_t ghost, float& speed) {
+    if (!g_navMeshAgentOffset) {
+        auto* ghostClass = il2cpp_runtime::FindClass("", "GhostAI");
+        auto* agentClass = il2cpp_runtime::FindClass("UnityEngine.AI", "NavMeshAgent");
+        if (!il2cpp_runtime::FindInstanceFieldByType(ghostClass, agentClass, g_navMeshAgentOffset)) return false;
+    }
+    std::uintptr_t agent = 0;
+    if (!il2cpp_runtime::ReadPointer(ghost + g_navMeshAgentOffset, agent) || !agent ||
+        !ResolveGetter(g_getSpeed, g_speedMethod, "UnityEngine.AI", "NavMeshAgent", "get_speed")) return false;
+    const float value = g_getSpeed(reinterpret_cast<void*>(agent), g_speedMethod);
+    if (!std::isfinite(value) || value < 0.0f || value > kMaximumReasonableSpeed) return false;
+    speed = value;
+    return true;
+}
+
+bool IsLocallyOwned(void* ghost) {
+    if (!ResolveGetter(g_getPhotonView, g_photonViewMethod, "Photon.Pun", "MonoBehaviourPun", "get_photonView") ||
+        !ResolveGetter(g_getIsMine, g_isMineMethod, "Photon.Pun", "PhotonView", "get_IsMine")) return false;
+    void* view = g_getPhotonView(ghost, g_photonViewMethod);
+    return view && g_getIsMine(view, g_isMineMethod);
 }
 
 void ResetMovementSampleLocked(std::uint64_t generation, std::uintptr_t ghost) {
@@ -114,7 +121,6 @@ ImVec4 ToImVec4(timer_logic::Color color) { return {color.r, color.g, color.b, c
 } // namespace
 
 void Initialize() {
-    ResolveApi();
     SyncSettings();
     const auto ghost = ghost_runtime::ReadSnapshot();
     std::lock_guard<std::mutex> lock(g_snapshotMutex);
@@ -140,10 +146,7 @@ void Shutdown() {
     g_photonViewMethod = nullptr;
     g_getIsMine = nullptr;
     g_isMineMethod = nullptr;
-    g_getTransform = nullptr;
-    g_transformMethod = nullptr;
-    g_getPosition = nullptr;
-    g_positionMethod = nullptr;
+    g_positionReader = {};
     g_navMeshAgentOffset = 0;
     ClearSnapshot();
 }
@@ -176,54 +179,26 @@ void OnGameThreadUpdate() {
             g_wasHunting = hunting;
         }
     }
-    if (!hunting || !ghost.valid || !ResolveApi()) {
+    if (!hunting || !ghost.valid) {
         ghost_speed_sync::PublishLocalSpeed(false, 0.0f);
         return;
     }
-    std::uintptr_t agent = 0;
-    if (!il2cpp_runtime::ReadPointer(ghost.instance + g_navMeshAgentOffset, agent) || !agent) {
-        ghost_speed_sync::PublishLocalSpeed(false, 0.0f);
-        return;
-    }
-    void* photonView = g_getPhotonView(reinterpret_cast<void*>(ghost.instance), g_photonViewMethod);
-    if (!photonView) {
-        ghost_speed_sync::PublishLocalSpeed(false, 0.0f);
-        return;
-    }
-    const float nativeSpeed = g_getSpeed(reinterpret_cast<void*>(agent), g_speedMethod);
-    const bool nativeSpeedValid = std::isfinite(nativeSpeed) &&
-        nativeSpeed >= 0.0f && nativeSpeed <= kMaximumReasonableSpeed;
-    const bool localMaster = ghost_speed_sync::PublishLocalSpeed(
-        nativeSpeedValid, nativeSpeedValid ? nativeSpeed : 0.0f);
-    const bool locallyOwned = localMaster ||
-        g_getIsMine(photonView, g_isMineMethod);
-    if (locallyOwned && nativeSpeedValid) {
-        if (!g_enabled.load()) return;
+    float nativeSpeed = 0.0f;
+    const bool nativeSpeedValid = ReadNativeSpeed(ghost.instance, nativeSpeed);
+    // Publish the room master's NavMesh reading even when its own HUD is hidden.
+    const bool localMaster = ghost_speed_sync::PublishLocalSpeed(nativeSpeedValid, nativeSpeed);
+    if (!g_enabled.load()) return;
+
+    void* instance = reinterpret_cast<void*>(ghost.instance);
+    if (localMaster || (nativeSpeedValid && IsLocallyOwned(instance))) {
         std::lock_guard<std::mutex> lock(g_snapshotMutex);
         if (ghost.generation == g_generation && ghost.instance == g_sampledGhost)
             g_lastSpeed = nativeSpeed;
         return;
     }
 
-    // The room master must never estimate speed from replicated positions. If the
-    // authoritative NavMesh value is unavailable, the invalid packet above is the
-    // only value sent to clients. Position sampling remains a client-only display
-    // fallback and is never rebroadcast.
-    if (localMaster) {
-        if (g_enabled.load()) {
-            std::lock_guard<std::mutex> lock(g_snapshotMutex);
-            if (ghost.generation == g_generation && ghost.instance == g_sampledGhost)
-                g_lastSpeed = 0.0f;
-        }
-        return;
-    }
-    if (!g_enabled.load()) return;
-
-    void* transform = g_getTransform(reinterpret_cast<void*>(ghost.instance), g_transformMethod);
-    if (!transform) return;
-    Vector3 position{};
-    g_getPosition(transform, &position, g_positionMethod);
-    if (!std::isfinite(position.x) || !std::isfinite(position.y) || !std::isfinite(position.z)) return;
+    unity_coordinates::Vector3 position{};
+    if (!g_positionReader.Resolve() || !g_positionReader.ReadComponent(instance, position)) return;
     const auto now = std::chrono::steady_clock::now();
     {
         std::lock_guard<std::mutex> lock(g_snapshotMutex);

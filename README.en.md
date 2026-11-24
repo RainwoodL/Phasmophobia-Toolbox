@@ -9,9 +9,7 @@ Strings are plain text and the standalone executable embeds raw DLL bytes.
 String obfuscation, payload encryption, split keys and runtime payload authentication have been removed.
 Both the standalone injector and game EXE embedding remain available.
 
-The latest supplied dump was checked on **2026-10-11**: **100/100 existing metadata contracts** passed.
-See the [compatibility record](docs/game-update-2026-10-11.md).
-Static checks do not establish that every feature works in the running game.
+Checked Steam build **26893244** on **2026-11-25**. Of the 100 historical checks, 80 match the previous dump. Teammate nameplates, hunt distance and ghost speed estimation now use Unity’s public coordinate APIs. The host continues to share hunt speed with teammates even when their own speed display is off. The HUD also labels Dowsing Rods and skips an invalid head-position fallback. In-game multiplayer verification is pending. [Compatibility record](docs/game-update-2026-11-25.md)
 
 ## Features
 
@@ -27,9 +25,14 @@ Settings are stored in `%LOCALAPPDATA%/GhostRoomTools/settings.bin`.
 
 ## Build and run
 
-Download the `Injector` or `Embedded` ZIP from [Releases](https://github.com/RainwoodL/Phasmophobia-Toolbox/releases/latest).
-The embedded package includes compiled tools: run `install-embedded.cmd` and enter your original game EXE path; no compiler is required.
-See the [injector guide](docs/release-injector.md) and [embedded guide](docs/release-embedded.md), each with an English section.
+Download and extract `Phasmophobia-Toolbox-v2026.11.25-win-x64.zip`. The archive includes both loading options. [Releases](https://github.com/RainwoodL/Phasmophobia-Toolbox/releases/latest)
+
+- **Standalone injector.** Start the original game from Steam, enter the main menu, then run `release/standalone/PhasmophobiaInjector.exe` from the archive. Run the injector again after each game restart. If it reports an access error, run it as administrator. [Injector guide](docs/release-injector.md)
+- **Embedded installation.** Close the game and run `install-embedded.cmd`. Enter the full path to the original `Phasmophobia.exe` on your PC. The toolbox will load when you start the game from Steam. To switch back to the injector, first verify the game files in Steam or restore the original EXE from a backup matching your current game version. [Installation and recovery guide](docs/release-embedded.md)
+
+Press **U** in game after the toolbox loads.
+
+### Build from source
 
 Requires Windows 10/11 x64, Visual Studio 2022 or newer with Desktop development with C++, Windows SDK, CMake 3.15+ and Ninja.
 PowerShell scripts locate and load the MSVC x64 environment automatically.
@@ -41,10 +44,6 @@ PowerShell scripts locate and load the MSVC x64 environment automatically.
 This checks repository hygiene and secrets, builds the project, runs **6 CTest tests** and **9 embedding regression scenarios**.
 Release outputs are placed in `release/`. Debug outputs and build intermediates are in `out/`.
 
-Start the game, enter the main menu, run `release/standalone/PhasmophobiaInjector.exe`, then press **U** in game.
-The standalone EXE contains the payload; no separate DLL is required for distribution.
-Run as administrator when the injector reports an access problem.
-
 ```powershell
 ./scripts/test.ps1 -Configuration Debug
 ./scripts/test.ps1 -Configuration Release -StaticAnalysis
@@ -52,8 +51,8 @@ Run as administrator when the injector reports an access problem.
 
 GitHub Actions runs repository checks, Debug build/tests and MSVC native static analysis.
 
-After committing source changes, run `./scripts/package-release.ps1 -Version v2026.10.11` to build both ZIPs and SHA-256 manifests.
-Packages are written to `out/release-packages/v2026.10.11/` from an explicit file list.
+After committing source changes, run `./scripts/package-release.ps1 -Version v2026.11.25` to create the ZIP with both loading options, the source commit manifest and SHA-256 checksums.
+Release files are written to `out/release-packages/v2026.11.25/`. Each player generates their embedded game EXE locally.
 
 ## Game updates
 

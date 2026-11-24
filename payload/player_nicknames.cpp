@@ -5,6 +5,7 @@
 #include "il2cpp_runtime.h"
 #include "settings_store.h"
 #include "settings_ui.h"
+#include "unity_coordinates.h"
 
 #include "imgui.h"
 
@@ -19,26 +20,20 @@
 namespace player_nicknames {
 namespace {
 
-struct Vector3 { float x, y, z; };
+using unity_coordinates::Vector3;
 struct Entry { std::int32_t actor; std::string name; float x, y, distance; };
 using GetInstanceFn = void* (*)(const il2cpp_runtime::Method*);
-using GetTransformFn = void* (*)(void*, const il2cpp_runtime::Method*);
-using GetPositionFn = void (*)(void*, Vector3*, const il2cpp_runtime::Method*);
-using WorldToScreenFn = void (*)(void*, Vector3*, int, Vector3*, const il2cpp_runtime::Method*);
 using GetIntFn = int (*)(void*, const il2cpp_runtime::Method*);
 
-// Kept in lockstep with Roomten hide_seek/combat.cpp for the current game build.
 constexpr std::uintptr_t kPlayerIsDead = 0x28;
-constexpr std::uintptr_t kPlayerHeadTarget = 0x88;
 // Verified against the current dump; generic List<T> metadata may be unavailable
 // during startup. ReadManagedList still validates the object, array and count.
 constexpr std::uintptr_t kNetworkPlayerSpots = 0x38;
 
 struct Api {
     GetInstanceFn networkInstance = nullptr; const il2cpp_runtime::Method* networkMethod = nullptr;
-    GetTransformFn getTransform = nullptr; const il2cpp_runtime::Method* transformMethod = nullptr;
-    GetPositionFn getPosition = nullptr; const il2cpp_runtime::Method* positionMethod = nullptr;
-    WorldToScreenFn worldToScreen = nullptr; const il2cpp_runtime::Method* worldMethod = nullptr;
+    unity_coordinates::PositionReader positions;
+    unity_coordinates::ScreenProjector projector;
     GetIntFn pixelWidth = nullptr; const il2cpp_runtime::Method* widthMethod = nullptr;
     GetIntFn pixelHeight = nullptr; const il2cpp_runtime::Method* heightMethod = nullptr;
 };
@@ -86,9 +81,7 @@ void Resolve(T& fn, const il2cpp_runtime::Method*& method, const char* ns, const
 void ResolveApi() {
     g_nextResolve = std::chrono::steady_clock::now() + std::chrono::seconds(2);
     Resolve(g_api.networkInstance, g_api.networkMethod, "", "Network", "get_Instance", 0);
-    Resolve(g_api.getTransform, g_api.transformMethod, "UnityEngine", "Component", "get_transform", 0);
-    Resolve(g_api.getPosition, g_api.positionMethod, "UnityEngine", "Transform", "get_position_Injected", 1);
-    Resolve(g_api.worldToScreen, g_api.worldMethod, "UnityEngine", "Camera", "WorldToScreenPoint_Injected", 3);
+    const bool coordinatesReady = g_api.positions.Resolve() && g_api.projector.Resolve();
     Resolve(g_api.pixelWidth, g_api.widthMethod, "UnityEngine", "Camera", "get_scaledPixelWidth", 0);
     Resolve(g_api.pixelHeight, g_api.heightMethod, "UnityEngine", "Camera", "get_scaledPixelHeight", 0);
     if (!g_api.pixelWidth)
@@ -107,10 +100,9 @@ void ResolveApi() {
     std::size_t listVersion = 0;
     metadata.spotsOffset = kNetworkPlayerSpots;
     il2cpp_runtime::FindInstanceListFieldByElementType(networkClass, spotClass, metadata.spotsOffset, listVersion);
-    // The direct head target below remains usable without a head-mounted socket.
-    il2cpp_runtime::FindInstanceFieldByType(playerClass, socketClass, metadata.headSocketOffset);
-    il2cpp_runtime::FindInstanceFieldByName(socketClass, "modelHeadSpot", metadata.modelHeadSpotOffset);
     metadata.valid =
+        il2cpp_runtime::FindInstanceFieldByType(playerClass, socketClass, metadata.headSocketOffset) &&
+        il2cpp_runtime::FindInstanceFieldByName(socketClass, "modelHeadSpot", metadata.modelHeadSpotOffset) &&
         il2cpp_runtime::FindInstanceFieldByType(networkClass, localPlayerClass, metadata.localPlayerOffset) &&
         il2cpp_runtime::FindInstanceFieldByType(localPlayerClass, cameraClass, metadata.cameraOffset) &&
         il2cpp_runtime::FindInstanceFieldByName(spotClass, "photonPlayer", metadata.spotPhotonOffset) &&
@@ -118,28 +110,16 @@ void ResolveApi() {
         il2cpp_runtime::FindInstanceFieldByName(photonClass, "actorNumber", metadata.actorOffset) &&
         il2cpp_runtime::FindInstanceFieldByName(photonClass, "IsLocal", metadata.isLocalOffset) &&
         il2cpp_runtime::FindInstanceFieldByName(photonClass, "nickName", metadata.nicknameOffset) &&
-        g_api.networkInstance && g_api.getTransform && g_api.getPosition &&
-        g_api.worldToScreen && g_api.pixelWidth && g_api.pixelHeight;
+        g_api.networkInstance && coordinatesReady && g_api.pixelWidth && g_api.pixelHeight;
     g_metadata = metadata;
     g_resolutionReady.store(metadata.valid);
 }
 
-bool PositionOf(void* transform, Vector3& value) {
-    if (!transform || !g_api.getPosition) return false;
-    g_api.getPosition(transform, &value, g_api.positionMethod);
-    return std::isfinite(value.x) && std::isfinite(value.y) && std::isfinite(value.z);
-}
-
 void* HeadTransform(std::uintptr_t player) {
     std::uintptr_t socket = 0, head = 0;
-    if (g_metadata.headSocketOffset && g_metadata.modelHeadSpotOffset &&
-        il2cpp_runtime::ReadPointer(player + g_metadata.headSocketOffset, socket) && socket &&
-        il2cpp_runtime::ReadPointer(socket + g_metadata.modelHeadSpotOffset, head) && head) {
-        return reinterpret_cast<void*>(head);
-    }
-    if (il2cpp_runtime::ReadPointer(player + kPlayerHeadTarget, head) && head)
-        return reinterpret_cast<void*>(head);
-    return nullptr;
+    if (!il2cpp_runtime::ReadPointer(player + g_metadata.headSocketOffset, socket) || !socket ||
+        !il2cpp_runtime::ReadPointer(socket + g_metadata.modelHeadSpotOffset, head)) return nullptr;
+    return reinterpret_cast<void*>(head);
 }
 
 
@@ -175,12 +155,11 @@ void OnGameThreadUpdate() {
         ClearEntries();
         return;
     }
-    void* cameraTransform = g_api.getTransform ?
-        g_api.getTransform(reinterpret_cast<void*>(camera), g_api.transformMethod) : nullptr;
+    void* cameraObject = reinterpret_cast<void*>(camera);
     Vector3 cameraPosition{};
-    const int width = g_api.pixelWidth ? g_api.pixelWidth(reinterpret_cast<void*>(camera), g_api.widthMethod) : 0;
-    const int height = g_api.pixelHeight ? g_api.pixelHeight(reinterpret_cast<void*>(camera), g_api.heightMethod) : 0;
-    if (!g_api.worldToScreen || !PositionOf(cameraTransform, cameraPosition) || width <= 0 || height <= 0) {
+    const int width = g_api.pixelWidth(cameraObject, g_api.widthMethod);
+    const int height = g_api.pixelHeight(cameraObject, g_api.heightMethod);
+    if (!g_api.positions.ReadComponent(cameraObject, cameraPosition) || width <= 0 || height <= 0) {
         ClearEntries();
         return;
     }
@@ -201,10 +180,9 @@ void OnGameThreadUpdate() {
         if (name.empty()) continue;
         font_store::RequestText(24.0f, name);
         Vector3 head{};
-        if (!PositionOf(HeadTransform(player), head)) continue;
         Vector3 screen{};
-        g_api.worldToScreen(reinterpret_cast<void*>(camera), &head, 2, &screen, g_api.worldMethod);
-        if (screen.z <= 0.0f) continue;
+        if (!g_api.positions.ReadTransform(HeadTransform(player), head) ||
+            !g_api.projector.WorldToScreen(cameraObject, head, screen) || screen.z <= 0.0f) continue;
         const auto normalized = feature_logic::NormalizeScreenPoint(screen.x, screen.y, static_cast<float>(width), static_cast<float>(height));
         if (!normalized.valid) continue;
         const float dx = head.x - cameraPosition.x;

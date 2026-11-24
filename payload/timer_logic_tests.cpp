@@ -95,7 +95,8 @@ int main() {
     assert(FormatEquipmentLabel(20, 2, false) == u8"摄像机");
     assert(FormatEquipmentLabel(0, -1, true) == u8"十字架");
     assert(FormatEquipmentLabel(0, 3, true) == u8"十字架");
-    assert(FormatEquipmentLabel(21, 1, true).empty());
+    assert(FormatEquipmentLabel(21, 1, true) == u8"探灵杆 · 二级");
+    assert(FormatEquipmentLabel(22, 1, true).empty());
     assert(TranslateOuijaAnswer(" yes ") == u8"是");
     assert(TranslateOuijaAnswer("DROWNED") == u8"溺亡");
     assert(TranslateOuijaAnswer("Master Bedroom") == u8"主卧");
@@ -145,7 +146,8 @@ int main() {
     assert(ClassifyInventorySlot({true, false, false, false, -1, -1}) == InventorySlotState::Unknown);
     assert(ClassifyInventorySlot({true, true, true, false, -1, -1}) == InventorySlotState::Unknown);
     assert(ClassifyInventorySlot({true, true, true, true, -1, 0}) == InventorySlotState::Unknown);
-    assert(ClassifyInventorySlot({true, true, true, true, 21, 0}) == InventorySlotState::Unknown);
+    assert(ClassifyInventorySlot({true, true, true, true, 21, 0}) == InventorySlotState::Equipment);
+    assert(ClassifyInventorySlot({true, true, true, true, 22, 0}) == InventorySlotState::Unknown);
     assert(ClassifyInventorySlot({true, true, true, true, 0, -1}) == InventorySlotState::Unknown);
     assert(ClassifyInventorySlot({true, true, true, true, 0, 3}) == InventorySlotState::Unknown);
 
@@ -153,10 +155,12 @@ int main() {
     assert(ClassifyInventorySlot(equipmentWithoutTextureEvidence) == InventorySlotState::Equipment);
     const auto emptyText = InventorySlotTextForState(InventorySlotState::Empty);
     const auto equipmentText = InventorySlotTextForState(InventorySlotState::Equipment);
+    const auto rodsText = InventorySlotTextForState(InventorySlotState::Equipment, 21);
     const auto nonEquipmentText = InventorySlotTextForState(InventorySlotState::NonEquipment);
     const auto unknownText = InventorySlotTextForState(InventorySlotState::Unknown);
     assert(emptyText.firstLine == nullptr && emptyText.secondLine == nullptr);
     assert(equipmentText.firstLine == nullptr && equipmentText.secondLine == nullptr);
+    assert(std::string(rodsText.firstLine) + rodsText.secondLine == FormatEquipmentLabel(21, 0, false));
     assert(std::string(nonEquipmentText.firstLine) == u8"可互");
     assert(std::string(nonEquipmentText.secondLine) == u8"动物");
     assert(unknownText.firstLine == nullptr && unknownText.secondLine == nullptr);
@@ -548,7 +552,7 @@ int main() {
              u8"十字架被燃烧准星信息屏幕准星玩家昵称物品栏布局横版竖版槽位大小高光颜色显示等级形状半径高度颜色"
              u8"实心圆空心圆十字一级二级三级门抽屉灯光开关可交互物"
              u8"激光投影仪EMF读取仪火光手电筒鬼魂笔记头戴设备点火器熏香运动传感器"
-             u8"收音器照相机盐理智药物录音机声音传感器通灵盒温度计三脚架紫外线灯摄像机"
+             u8"收音器照相机盐理智药物录音机声音传感器通灵盒温度计三脚架紫外线灯摄像机探灵杆"
               u8"显示隐藏工具箱菜单Alt鼠标左键移动未固定的功能浮窗"
              u8"手动开始圣木计时清除圣木计时记录清除十字架燃烧记录支持作者感谢支持你的支持就是我最大的动力"
              u8"可互动物自愿赞助辅助永久免费如果无法赞助也可以去抖音bilibili给作者支持点赞关注QQ群不定时更新作者霖木"

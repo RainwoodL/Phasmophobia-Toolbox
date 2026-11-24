@@ -1,5 +1,13 @@
 # 更新记录
 
+## v2026.11.25 · 第二版
+
+- 适配 Steam build **26893244**。修复队友头顶昵称、猎杀距离和客户端鬼速估算，并移除已失效的头部位置后备读取。
+- 修复房主的猎杀鬼速同步。即使房主关闭自己的鬼速窗口，队友仍可接收房主读数。
+- 准星信息与物品栏新增“探灵杆”。物品栏以文字显示该装备。
+- Windows x64 版将独立注入器和嵌入安装脚本合为一个 ZIP。选择嵌入方式时，每位玩家使用本机原版游戏 EXE 安装。
+- Debug 和 Release 各通过 6 项 CTest，Python 比较器的 11 项回归测试通过。游戏内显示与真实多人同步仍待实测。[本版兼容记录](docs/game-update-2026-11-25.md)
+
 ## v2026.10.11 · 首次公开发行
 
 - 提供 Windows x64 注入式和嵌入式 ZIP，附中文为主、英文为辅的使用说明。
@@ -21,5 +29,7 @@
 旧项目 ToolsBOX 的更新核对和设计记录保留在 [docs/](docs/README.md)。
 
 ## English
+
+**v2026.11.25** targets Steam build **26893244**. It fixes teammate nameplates, hunt distance, client-side ghost speed estimation and host speed sharing. The host can turn off their own speed display and continue sharing readings. The crosshair and inventory now recognize Dowsing Rods. The Windows x64 ZIP contains both the standalone injector and the installer for embedding the toolbox into each player's own game EXE.
 
 2026-10-11: verified 100 existing metadata contracts against the latest supplied dump, removed string obfuscation and payload encryption/authentication, retained both loading modes, and prepared Chinese-first documentation with MIT licensing for first-party code.

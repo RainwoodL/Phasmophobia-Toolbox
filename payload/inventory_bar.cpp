@@ -322,7 +322,7 @@ timer_logic::MovableWindowResult DrawWindow(bool menuVisible, bool altDragActive
                                settings_ui::ApplyOpacity(IM_COL32_WHITE, settings_store::FeatureId::Inventory));
             }
         }
-        const auto text = feature_logic::InventorySlotTextForState(item.state);
+        const auto text = feature_logic::InventorySlotTextForState(item.state, item.visual.equipmentType);
         if (text.firstLine && text.secondLine) {
             constexpr float labelFontSize = 16.0f;
             constexpr float lineGap = 2.0f;

@@ -151,6 +151,7 @@ if(BUILD_TESTING)
 
     add_executable(overlay_visibility_tests
         overlay_visibility_tests.cpp hunt_timer.cpp player_nicknames.cpp
+        ghost_distance.cpp ghost_speed_display.cpp unity_coordinates.cpp
         font_store.cpp settings_store.cpp settings_wire.cpp timer_logic.cpp feature_logic.cpp
         ${IMGUI_DIR}/imgui.cpp ${IMGUI_DIR}/imgui_draw.cpp
         ${IMGUI_DIR}/imgui_tables.cpp ${IMGUI_DIR}/imgui_widgets.cpp)
@@ -181,6 +182,7 @@ add_library(payload SHARED
     ghost_status.cpp
     ghost_runtime.cpp
     ghost_distance.cpp
+    unity_coordinates.cpp
     ghost_speed_display.cpp
     ghost_speed_sync.cpp
     ghost_speed_sync_protocol.cpp

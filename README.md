@@ -8,9 +8,7 @@
 当前源码使用明文字符串与原始 DLL 字节，已移除字符串混淆、payload 加密、密钥拆分和运行时防篡改认证。
 支持独立单文件注入器和游戏 EXE 嵌入两种加载方式。
 
-最新兼容核对：**2026-10-11**，用户提供的最新 dump.cs 的 **100/100 项既有元数据契约**通过。
-这包括字段布局、方法签名、固定偏移与枚举值；详见[本次更新记录](docs/game-update-2026-10-11.md)。
-静态核对和本地测试不能替代游戏内验收。
+**2026-11-25** 已核对 Steam build **26893244**，100 项历史检查中有 80 项与上版一致。队友昵称、猎杀距离与鬼速估算已改用 Unity 公开坐标接口。房主关闭自己的鬼速显示时，仍会向队友同步猎杀鬼速。本次也补充了探灵杆显示，并移除了失效的昵称头部后备偏移。游戏内联机效果待实测。[本次兼容记录](docs/game-update-2026-11-25.md)
 
 ## 功能
 
@@ -25,17 +23,12 @@
 
 ## 使用
 
-1. 从[发行页面](https://github.com/RainwoodL/Phasmophobia-Toolbox/releases/latest)下载 `Injector` 注入包或 `Embedded` 嵌入包，也可从源码构建 Release。
-2. 启动游戏，进入主菜单。
-3. 运行 `release/standalone/PhasmophobiaInjector.exe`，等待工具箱启动提示。
-4. 游戏内按 **U** 打开菜单。遇到权限提示时以管理员身份运行注入器。
+下载并完整解压 `Phasmophobia-Toolbox-v2026.11.25-win-x64.zip`，选择以下任一方式加载工具箱。[发行页面](https://github.com/RainwoodL/Phasmophobia-Toolbox/releases/latest)
 
-独立注入器内嵌原始 `payload.dll`，单独分发 EXE 即可。
-设置保存在 `%LOCALAPPDATA%/GhostRoomTools/settings.bin`。
+- **注入方式**。从 Steam 启动原版游戏，进入主菜单后运行包内的 `release/standalone/PhasmophobiaInjector.exe`。每次重启游戏后，重新运行一次。遇到访问权限提示时，以管理员身份运行注入器。[注入使用说明](docs/release-injector.md)
+- **嵌入方式**。关闭游戏，双击包内的 `install-embedded.cmd`，输入你本机原版 `Phasmophobia.exe` 的完整路径。安装后每次从 Steam 启动游戏，工具箱会自动加载。切回注入方式前，先通过 Steam 验证游戏文件或用与当前游戏版本匹配的备份恢复原版 EXE。[安装、更新与恢复说明](docs/release-embedded.md)
 
-`Embedded` 发行包双击 `install-embedded.cmd` 并输入本机原版游戏 EXE 路径即可安装，无需编译。
-安装后从 Steam 启动游戏即可自动加载；详细安装、更新与恢复步骤见[嵌入包说明](docs/release-embedded.md)。
-注入包说明见[注入包说明](docs/release-injector.md)。
+工具箱加载后按 **U** 打开菜单。两种方式共用 `%LOCALAPPDATA%/GhostRoomTools/settings.bin` 中的设置。
 
 ## 构建与验证
 
@@ -57,13 +50,13 @@ Release 产物位于 `release/`；Debug 中间文件与产物位于 `out/`。
 
 GitHub Actions 对 push 和 pull request 执行仓库检查、Debug 构建与测试、MSVC 原生静态分析。
 
-提交源码后，生成两种发行 ZIP、源码提交清单与 SHA-256 校验文件：
+提交源码后，运行以下命令生成含两种加载方式的 ZIP、源码提交清单和 SHA-256 校验文件。
 
 ```powershell
-./scripts/package-release.ps1 -Version v2026.10.11
+./scripts/package-release.ps1 -Version v2026.11.25
 ```
 
-发行文件位于 `out/release-packages/v2026.10.11/`，按清单选取文件，避免将旧包、游戏 EXE 或本机 dump 带入发行包。
+发行文件位于 `out/release-packages/v2026.11.25/`。清单列出要打包的工具、安装脚本、文档和许可证。嵌入版游戏 EXE 由每位玩家在本机生成。
 
 ## 游戏更新后核对
 
