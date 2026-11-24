@@ -171,8 +171,8 @@ if(BUILD_TESTING)
     add_test(NAME ghost_speed_sync_tests COMMAND ghost_speed_sync_tests)
 endif()
 
-add_library(payload SHARED
-    payload.cpp
+add_library(toolsbox_hud STATIC
+    hud_runtime.cpp
     d3d11_hook.cpp
     overlay.cpp
     font_store.cpp
@@ -212,7 +212,7 @@ add_library(payload SHARED
     ${IMGUI_DIR}/backends/imgui_impl_dx11.cpp
     ${IMGUI_DIR}/backends/imgui_impl_win32.cpp
 )
-toolsbox_enable_project_checks(payload)
+toolsbox_enable_project_checks(toolsbox_hud)
 
 if(MSVC AND TOOLSBOX_ENABLE_MSVC_ANALYSIS)
     # These SEH guards intentionally isolate faults raised while inspecting
@@ -237,20 +237,16 @@ if(MSVC AND TOOLSBOX_ENABLE_MSVC_ANALYSIS)
     )
 endif()
 
-target_include_directories(payload PRIVATE
+target_include_directories(toolsbox_hud PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     "${INVENTORY_GENERATED_DIR}"
     ${IMGUI_DIR}
     ${IMGUI_DIR}/backends
 )
 
-add_dependencies(payload inventory_png_header)
-target_compile_options(payload PRIVATE /utf-8 /GS /sdl /permissive-)
-target_link_options(payload PRIVATE
-    /DYNAMICBASE /HIGHENTROPYVA /NXCOMPAT /INCREMENTAL:NO
-    $<$<CONFIG:Release>:/OPT:REF /OPT:ICF /Brepro>
-)
-target_link_libraries(payload PRIVATE
+add_dependencies(toolsbox_hud inventory_png_header)
+target_compile_options(toolsbox_hud PRIVATE /utf-8 /GS /sdl /permissive-)
+target_link_libraries(toolsbox_hud PRIVATE
     user32
     kernel32
     shell32
@@ -262,6 +258,22 @@ target_link_libraries(payload PRIVATE
     detours
 )
 
+add_library(payload SHARED payload.cpp)
+add_executable(ToolsboxEmbedded WIN32 launcher.cpp)
+foreach(target IN ITEMS payload ToolsboxEmbedded)
+    toolsbox_enable_project_checks(${target})
+    target_compile_options(${target} PRIVATE /utf-8 /GS /sdl /permissive-)
+    target_link_libraries(${target} PRIVATE toolsbox_hud)
+    target_link_options(${target} PRIVATE
+        /DYNAMICBASE /HIGHENTROPYVA /NXCOMPAT /INCREMENTAL:NO
+        $<$<CONFIG:Release>:/OPT:REF /OPT:ICF /Brepro>
+    )
+endforeach()
+
+set_target_properties(ToolsboxEmbedded PROPERTIES
+    OUTPUT_NAME "Phasmophobia"
+    RUNTIME_OUTPUT_DIRECTORY "${TOOLSBOX_ARTIFACT_DIR}/embedded"
+)
 set_target_properties(payload PROPERTIES
     OUTPUT_NAME "payload"
     RUNTIME_OUTPUT_DIRECTORY "${TOOLSBOX_ARTIFACT_DIR}/embedded"

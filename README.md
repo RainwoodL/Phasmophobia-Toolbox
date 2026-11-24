@@ -6,7 +6,7 @@
 界面和文档以中文为主，提供英文使用说明。第一方代码采用 MIT 许可证。
 
 当前源码使用明文字符串与原始 DLL 字节，已移除字符串混淆、payload 加密、密钥拆分和运行时防篡改认证。
-支持独立单文件注入器和游戏 EXE 嵌入两种加载方式。
+Windows x64 发行包提供独立注入器和内置工具箱的游戏启动程序。
 
 **2026-11-25** 已核对 Steam build **26893244**，100 项历史检查中有 80 项与上版一致。队友昵称、猎杀距离与鬼速估算已改用 Unity 公开坐标接口。房主关闭自己的鬼速显示时，仍会向队友同步猎杀鬼速。本次也补充了探灵杆显示，并移除了失效的昵称头部后备偏移。游戏内联机效果待实测。[本次兼容记录](docs/game-update-2026-11-25.md)
 
@@ -23,10 +23,10 @@
 
 ## 使用
 
-下载并完整解压 `Phasmophobia-Toolbox-v2026.11.25-win-x64.zip`，选择以下任一方式加载工具箱。[发行页面](https://github.com/RainwoodL/Phasmophobia-Toolbox/releases/latest)
+下载 `Phasmophobia-Toolbox-v2026.11.25-win-x64.zip`，可使用发行页列出的 SHA-256 核验下载文件。解压后有两个 EXE，选择其中一种方式加载工具箱。[发行页面](https://github.com/RainwoodL/Phasmophobia-Toolbox/releases/latest)
 
-- **注入方式**。从 Steam 启动原版游戏，进入主菜单后运行包内的 `release/standalone/PhasmophobiaInjector.exe`。每次重启游戏后，重新运行一次。遇到访问权限提示时，以管理员身份运行注入器。[注入使用说明](docs/release-injector.md)
-- **嵌入方式**。关闭游戏，双击包内的 `install-embedded.cmd`，输入你本机原版 `Phasmophobia.exe` 的完整路径。安装后每次从 Steam 启动游戏，工具箱会自动加载。切回注入方式前，先通过 Steam 验证游戏文件或用与当前游戏版本匹配的备份恢复原版 EXE。[安装、更新与恢复说明](docs/release-embedded.md)
+- **注入方式**。从 Steam 启动原版游戏，进入主菜单后运行解压出的 `Toolsbox.exe`。每次重启游戏后，重新运行一次。[注入使用说明](docs/release-injector.md)
+- **嵌入方式**。关闭游戏，在 Steam 中选择“管理 → 浏览本地文件”。先将原版 `Phasmophobia.exe` 备份到游戏目录以外，再把解压出的同名 EXE 复制到原位置，照常从 Steam 启动。这个启动程序由本项目构建，使用玩家已安装的 Unity 引擎、游戏程序集和数据。恢复时用匹配当前游戏版本的备份换回原版，或通过 Steam 验证游戏文件。[安装、更新与恢复说明](docs/release-embedded.md)
 
 工具箱加载后按 **U** 打开菜单。两种方式共用 `%LOCALAPPDATA%/GhostRoomTools/settings.bin` 中的设置。
 
@@ -39,7 +39,7 @@
 ./scripts/check-all.ps1 -Configuration Release
 ```
 
-该命令执行仓库卫生检查、秘密扫描、构建、**6 项 CTest** 和 **9 个嵌入脚本回归场景**。
+该命令执行仓库卫生检查、秘密扫描、构建、**7 项 CTest**（含嵌入式启动程序测试）和 **9 个本机嵌入脚本回归场景**。
 Release 产物位于 `release/`；Debug 中间文件与产物位于 `out/`。
 
 ```powershell
@@ -50,13 +50,13 @@ Release 产物位于 `release/`；Debug 中间文件与产物位于 `out/`。
 
 GitHub Actions 对 push 和 pull request 执行仓库检查、Debug 构建与测试、MSVC 原生静态分析。
 
-提交源码后，运行以下命令生成含两种加载方式的 ZIP、源码提交清单和 SHA-256 校验文件。
+提交源码后，运行以下命令生成发行 ZIP 和构建记录。
 
 ```powershell
 ./scripts/package-release.ps1 -Version v2026.11.25
 ```
 
-发行文件位于 `out/release-packages/v2026.11.25/`。清单列出要打包的工具、安装脚本、文档和许可证。嵌入版游戏 EXE 由每位玩家在本机生成。
+输出目录为 `out/release-packages/v2026.11.25/`。ZIP 根目录只有 `Toolsbox.exe` 和 `Phasmophobia.exe`。`build-manifest.json` 记录源码提交和两个 EXE 的哈希，`SHA256SUMS.txt` 记录 ZIP 哈希。这两份文件保存在构建目录，发布时将 ZIP 哈希写入发行页。
 
 ## 游戏更新后核对
 
@@ -73,9 +73,9 @@ python ./tools/test_dump_compatibility.py 'D:/dumps/previous.cs' 'D:/dumps/lates
 
 `dump.cs`、游戏程序集、反编译工具和编译产物只保存在本机，不进入源码仓库。
 
-## 嵌入游戏 EXE
+## 开发用本机嵌入脚本
 
-关闭游戏，以新的原版 x64 EXE 为输入。推荐先仅生成候选包与清单：
+开发者还可以用仓库内的脚本，在本机原版游戏 EXE 上生成并测试嵌入副本。关闭游戏后，用以下命令生成候选文件与清单。
 
 ```powershell
 ./scripts/embed-game.ps1 -GameExecutable 'D:/Steam/steamapps/common/Phasmophobia/Phasmophobia.exe' -DumpPath 'D:/dumps/latest.cs' -PackageOnly
@@ -86,7 +86,8 @@ python ./tools/test_dump_compatibility.py 'D:/dumps/previous.cs' 'D:/dumps/lates
 | 产物 | 位置 |
 | --- | --- |
 | 独立注入器 | `release/standalone/PhasmophobiaInjector.exe` |
-| 内嵌版游戏副本 | `release/embedded/Phasmophobia.embedded.exe` |
+| 项目构建的嵌入式启动程序（用于发行 ZIP） | `release/embedded/Phasmophobia.exe` |
+| 本机脚本生成的游戏副本 | `release/embedded/Phasmophobia.embedded.exe` |
 | 原始 payload | `release/embedded/payload.dll` |
 | 嵌入辅助工具 | `release/tools/pe_embed.exe` |
 | 来源与产物哈希清单 | `release/embedded/embed-manifest.json` |

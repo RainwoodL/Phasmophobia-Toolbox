@@ -5,8 +5,8 @@
 - 适配 Steam build **26893244**。修复队友头顶昵称、猎杀距离和客户端鬼速估算，并移除已失效的头部位置后备读取。
 - 修复房主的猎杀鬼速同步。即使房主关闭自己的鬼速窗口，队友仍可接收房主读数。
 - 准星信息与物品栏新增“探灵杆”。物品栏以文字显示该装备。
-- Windows x64 版将独立注入器和嵌入安装脚本合为一个 ZIP。选择嵌入方式时，每位玩家使用本机原版游戏 EXE 安装。
-- Debug 和 Release 各通过 6 项 CTest，Python 比较器的 11 项回归测试通过。游戏内显示与真实多人同步仍待实测。[本版兼容记录](docs/game-update-2026-11-25.md)
+- Windows x64 发行 ZIP 根目录提供两个文件。`Toolsbox.exe` 用于注入。`Phasmophobia.exe` 是本项目构建的嵌入式启动程序，使用本机已安装的游戏引擎和数据。使用后者前，请备份游戏目录中的原版同名文件。
+- Debug 和 Release 各通过 7/7 项 CTest，包含新增的嵌入式启动程序测试。Python 比较器的 11/11 项回归测试通过。游戏内显示与真实多人同步仍待实测。[本版兼容记录](docs/game-update-2026-11-25.md)
 
 ## v2026.10.11 · 首次公开发行
 
@@ -30,6 +30,6 @@
 
 ## English
 
-**v2026.11.25** targets Steam build **26893244**. It fixes teammate nameplates, hunt distance, client-side ghost speed estimation and host speed sharing. The host can turn off their own speed display and continue sharing readings. The crosshair and inventory now recognize Dowsing Rods. The Windows x64 ZIP contains both the standalone injector and the installer for embedding the toolbox into each player's own game EXE.
+**v2026.11.25** targets Steam build **26893244**. It fixes teammate nameplates, hunt distance, client-side ghost speed estimation and host speed sharing. The host can turn off their own speed display and continue sharing readings. The crosshair and inventory now recognize Dowsing Rods. The Windows x64 ZIP contains `Toolsbox.exe` for injection and `Phasmophobia.exe`, a project-built launcher that uses the installed game's runtime and data. Back up the original game EXE before installing the launcher.
 
 2026-10-11: verified 100 existing metadata contracts against the latest supplied dump, removed string obfuscation and payload encryption/authentication, retained both loading modes, and prepared Chinese-first documentation with MIT licensing for first-party code.

@@ -21,7 +21,7 @@ $analysisValue = if ($StaticAnalysis) { 'ON' } else { 'OFF' }
 if ($LASTEXITCODE -ne 0) { throw 'CMake configure failed.' }
 
 if ($StaticAnalysis) {
-    & cmake --build $buildDirectory --target payload PhasmophobiaInjector pe_embed
+    & cmake --build $buildDirectory --target payload PhasmophobiaInjector ToolsboxEmbedded pe_embed
     if ($LASTEXITCODE -ne 0) { throw 'Static-analysis build failed.' }
 }
 else {

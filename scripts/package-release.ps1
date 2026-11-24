@@ -9,6 +9,8 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
+$stageDirectory = $null
+$packageLock = $null
 Push-Location $repositoryRoot
 try {
     $sourceCommit = (& git rev-parse HEAD).Trim()
@@ -19,75 +21,70 @@ try {
     }
 
     $outputDirectory = Join-Path $repositoryRoot "out\release-packages\$Version"
-    if (Test-Path -LiteralPath $outputDirectory) {
-        throw "Release package directory already exists: $outputDirectory"
-    }
+    [IO.Directory]::CreateDirectory($outputDirectory) | Out-Null
+    $packageLock = [IO.FileStream]::new((Join-Path $outputDirectory '.packaging.lock'),
+        [IO.FileMode]::OpenOrCreate, [IO.FileAccess]::ReadWrite, [IO.FileShare]::None,
+        4096, [IO.FileOptions]::DeleteOnClose)
     if (-not $SkipBuild) {
         & (Join-Path $PSScriptRoot 'check-all.ps1') -Configuration Release
     }
 
-    $packageName = "Phasmophobia-Toolbox-$Version-win-x64"
-    $packageDirectory = Join-Path $outputDirectory $packageName
+    $archiveName = "Phasmophobia-Toolbox-$Version-win-x64.zip"
     $fileMap = [ordered]@{
-        'LICENSE' = 'LICENSE'
-        'THIRD_PARTY_NOTICES.md' = 'THIRD_PARTY_NOTICES.md'
-        'imgui/LICENSE.txt' = 'imgui/LICENSE.txt'
-        'third_party/detours/LICENSE.md' = 'third_party/detours/LICENSE.md'
-        'README.md' = 'docs/release-embedded.md'
-        'install-embedded.cmd' = 'scripts/install-embedded.cmd'
-        'scripts/install-embedded.ps1' = 'scripts/install-embedded.ps1'
-        'scripts/embed-game.ps1' = 'scripts/embed-game.ps1'
-        'release/standalone/PhasmophobiaInjector.exe' = 'release/standalone/PhasmophobiaInjector.exe'
-        'release/embedded/payload.dll' = 'release/embedded/payload.dll'
-        'release/tools/pe_embed.exe' = 'release/tools/pe_embed.exe'
+        'Toolsbox.exe' = 'release/standalone/PhasmophobiaInjector.exe'
+        'Phasmophobia.exe' = 'release/embedded/Phasmophobia.exe'
     }
-    foreach ($relativePath in $fileMap.Values) {
-        if (-not (Test-Path -LiteralPath (Join-Path $repositoryRoot $relativePath) -PathType Leaf)) {
-            throw "Release file missing: $relativePath"
-        }
-    }
-    New-Item -ItemType Directory -Path $outputDirectory | Out-Null
-
+    $stageName = '.stage-' + [Guid]::NewGuid().ToString('N')
+    $stageDirectory = Join-Path $outputDirectory $stageName
+    New-Item -ItemType Directory -Path $stageDirectory | Out-Null
     $fileRecords = @(foreach ($entry in $fileMap.GetEnumerator()) {
-        $sourcePath = Join-Path $repositoryRoot $entry.Value
-        $destinationPath = Join-Path $packageDirectory $entry.Key
-        New-Item -ItemType Directory -Path (Split-Path -Parent $destinationPath) -Force | Out-Null
-        if ([IO.Path]::GetExtension($destinationPath) -eq '.ps1') {
-            [IO.File]::WriteAllText($destinationPath, [IO.File]::ReadAllText($sourcePath), [Text.UTF8Encoding]::new($true))
-        }
-        else {
-            Copy-Item -LiteralPath $sourcePath -Destination $destinationPath
-        }
+        $stagedFile = Join-Path $stageDirectory $entry.Key
+        Copy-Item -LiteralPath (Join-Path $repositoryRoot $entry.Value) -Destination $stagedFile
         [ordered]@{
             Path = $entry.Key
-            Bytes = (Get-Item -LiteralPath $destinationPath).Length
-            SHA256 = (Get-FileHash -LiteralPath $destinationPath -Algorithm SHA256).Hash.ToLowerInvariant()
+            Bytes = (Get-Item -LiteralPath $stagedFile).Length
+            SHA256 = (Get-FileHash -LiteralPath $stagedFile -Algorithm SHA256).Hash.ToLowerInvariant()
         }
     })
+
+    $archivePath = Join-Path $stageDirectory $archiveName
+    $stagedExecutables = @($fileMap.Keys | ForEach-Object { Join-Path $stageDirectory $_ })
+    Compress-Archive -LiteralPath $stagedExecutables -DestinationPath $archivePath -CompressionLevel Optimal
+    $archiveHash = (Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash.ToLowerInvariant()
     $manifest = [ordered]@{
         Version = $Version
-        Mode = 'Combined'
         Configuration = 'Release'
         Architecture = 'x64'
+        Mode = 'Combined'
         SourceCommit = $sourceCommit
         CreatedAtUtc = [DateTime]::UtcNow.ToString('o')
         Files = $fileRecords
+        Archive = [ordered]@{ Path = $archiveName; SHA256 = $archiveHash }
     }
-    $manifestPath = Join-Path $packageDirectory 'build-manifest.json'
-    $manifest | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $manifestPath -Encoding UTF8
-    $checksums = @($fileRecords | ForEach-Object { "$($_.SHA256)  $($_.Path)" })
-    $manifestHash = (Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash.ToLowerInvariant()
-    $checksums += "$manifestHash  build-manifest.json"
-    $checksums | Set-Content -LiteralPath (Join-Path $packageDirectory 'SHA256SUMS.txt') -Encoding ASCII
+    $manifest | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $stageDirectory 'build-manifest.json') -Encoding UTF8
+    "$archiveHash  $archiveName" | Set-Content -LiteralPath (Join-Path $stageDirectory 'SHA256SUMS.txt') -Encoding ASCII
 
-    $archivePath = Join-Path $outputDirectory ($packageName + '.zip')
-    Compress-Archive -LiteralPath $packageDirectory -DestinationPath $archivePath -CompressionLevel Optimal
-
-    $archiveHash = (Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash.ToLowerInvariant()
-    "$archiveHash  $packageName.zip" | Set-Content -LiteralPath (Join-Path $outputDirectory 'SHA256SUMS.txt') -Encoding ASCII
-    Write-Output "Release package: $archivePath"
-    Get-Item -LiteralPath $archivePath | Select-Object Name, Length
+    # Publish the archive and its build records together, rolling back on failure.
+    . (Join-Path $PSScriptRoot 'embed-game.ps1')
+    $outputs = @(foreach ($name in @('build-manifest.json', 'SHA256SUMS.txt', $archiveName)) {
+        @{ Source = Join-Path $stageDirectory $name; Destination = Join-Path $outputDirectory $name }
+    })
+    Install-EmbedFiles -Files $outputs
+    Write-Output "Release ZIP SHA-256: $archiveHash"
+    Get-Item -LiteralPath (Join-Path $outputDirectory $archiveName) | Select-Object Name, Length
 }
 finally {
-    Pop-Location
+    try {
+        if ($stageDirectory -and (Test-Path -LiteralPath $stageDirectory -PathType Container)) {
+            # Delete only our known temporary files. Leave any unexpected entries intact.
+            foreach ($name in @('Toolsbox.exe', 'Phasmophobia.exe', $archiveName, 'build-manifest.json', 'SHA256SUMS.txt')) {
+                [IO.File]::Delete((Join-Path $stageDirectory $name))
+            }
+            [IO.Directory]::Delete($stageDirectory)
+        }
+    }
+    finally {
+        if ($packageLock) { $packageLock.Dispose() }
+        Pop-Location
+    }
 }

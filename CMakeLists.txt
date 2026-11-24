@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(PhasmophobiaToolbox LANGUAGES CXX)
+project(PhasmophobiaToolbox VERSION 2026.11.25 LANGUAGES CXX)
 
 include(CTest)
 include(cmake/ProjectChecks.cmake)
@@ -19,6 +19,12 @@ endif()
 add_subdirectory(payload)
 add_subdirectory(injector)
 
+configure_file(resource/distribution.rc.in distribution.rc @ONLY)
+foreach(target IN ITEMS ToolsboxEmbedded PhasmophobiaInjector)
+    target_sources(${target} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/distribution.rc")
+endforeach()
+target_sources(ToolsboxEmbedded PRIVATE payload/launcher_environment.cpp payload/launcher.manifest)
+
 add_executable(pe_embed tools/pe_embed.cpp)
 target_compile_features(pe_embed PRIVATE cxx_std_17)
 target_compile_options(pe_embed PRIVATE /utf-8 /GS /sdl /permissive-)
@@ -29,11 +35,15 @@ set_target_properties(pe_embed PROPERTIES
 )
 
 if(BUILD_TESTING)
+    add_test(NAME release_launcher_tests COMMAND powershell.exe -NoProfile -NonInteractive
+        -ExecutionPolicy Bypass -File "${CMAKE_SOURCE_DIR}/scripts/test-release-launcher.ps1"
+        -Executable "$<TARGET_FILE:ToolsboxEmbedded>")
     add_custom_target(check
         COMMAND "${CMAKE_CTEST_COMMAND}" --output-on-failure --build-config $<CONFIG>
         DEPENDS
             pe_embed
             PhasmophobiaInjector
+            ToolsboxEmbedded
             timer_logic_tests
             inventory_textures_tests
             settings_store_tests

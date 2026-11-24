@@ -7,7 +7,7 @@ The interface and primary documentation are in Chinese. First-party code is MIT 
 
 Strings are plain text and the standalone executable embeds raw DLL bytes.
 String obfuscation, payload encryption, split keys and runtime payload authentication have been removed.
-Both the standalone injector and game EXE embedding remain available.
+The Windows x64 release includes a standalone injector and a game launcher with the toolbox built in.
 
 Checked Steam build **26893244** on **2026-11-25**. Of the 100 historical checks, 80 match the previous dump. Teammate nameplates, hunt distance and ghost speed estimation now use Unity’s public coordinate APIs. The host continues to share hunt speed with teammates even when their own speed display is off. The HUD also labels Dowsing Rods and skips an invalid head-position fallback. In-game multiplayer verification is pending. [Compatibility record](docs/game-update-2026-11-25.md)
 
@@ -25,10 +25,10 @@ Settings are stored in `%LOCALAPPDATA%/GhostRoomTools/settings.bin`.
 
 ## Build and run
 
-Download and extract `Phasmophobia-Toolbox-v2026.11.25-win-x64.zip`. The archive includes both loading options. [Releases](https://github.com/RainwoodL/Phasmophobia-Toolbox/releases/latest)
+Download and extract `Phasmophobia-Toolbox-v2026.11.25-win-x64.zip`. The release page lists the archive’s SHA-256. Choose one of the two executables. [Releases](https://github.com/RainwoodL/Phasmophobia-Toolbox/releases/latest)
 
-- **Standalone injector.** Start the original game from Steam, enter the main menu, then run `release/standalone/PhasmophobiaInjector.exe` from the archive. Run the injector again after each game restart. If it reports an access error, run it as administrator. [Injector guide](docs/release-injector.md)
-- **Embedded installation.** Close the game and run `install-embedded.cmd`. Enter the full path to the original `Phasmophobia.exe` on your PC. The toolbox will load when you start the game from Steam. To switch back to the injector, first verify the game files in Steam or restore the original EXE from a backup matching your current game version. [Installation and recovery guide](docs/release-embedded.md)
+- **Standalone injector.** Start the original game from Steam, enter the main menu, then run the extracted `Toolsbox.exe`. Run it again after each game restart. [Injector guide](docs/release-injector.md)
+- **Embedded launcher.** Close the game and choose **Manage → Browse local files** in Steam. Back up the original `Phasmophobia.exe` outside the game directory, copy the extracted file of the same name into its place, then start the game from Steam. This project-built launcher uses the Unity runtime, game assemblies and data in your installed copy. To restore the original, verify the game files in Steam or use a backup matching your current game version. [Installation and recovery guide](docs/release-embedded.md)
 
 Press **U** in game after the toolbox loads.
 
@@ -41,7 +41,7 @@ PowerShell scripts locate and load the MSVC x64 environment automatically.
 ./scripts/check-all.ps1 -Configuration Release
 ```
 
-This checks repository hygiene and secrets, builds the project, runs **6 CTest tests** and **9 embedding regression scenarios**.
+This checks repository hygiene and secrets, builds the project and runs **7 CTest tests**, including the embedded launcher test, and **9 local embedding script regression scenarios**.
 Release outputs are placed in `release/`. Debug outputs and build intermediates are in `out/`.
 
 ```powershell
@@ -51,8 +51,7 @@ Release outputs are placed in `release/`. Debug outputs and build intermediates 
 
 GitHub Actions runs repository checks, Debug build/tests and MSVC native static analysis.
 
-After committing source changes, run `./scripts/package-release.ps1 -Version v2026.11.25` to create the ZIP with both loading options, the source commit manifest and SHA-256 checksums.
-Release files are written to `out/release-packages/v2026.11.25/`. Each player generates their embedded game EXE locally.
+After committing source changes, run `./scripts/package-release.ps1 -Version v2026.11.25`. The ZIP has two entries at its root, `Toolsbox.exe` and `Phasmophobia.exe`. The build directory `out/release-packages/v2026.11.25/` also holds `build-manifest.json` with the source commit and executable hashes, and `SHA256SUMS.txt` with the archive hash. Publish the archive hash on the release page.
 
 ## Game updates
 
@@ -68,9 +67,9 @@ Obfuscated identifiers are normalized, so matching types and offsets alone canno
 Validate hunts, scene transitions, RPCs and multiplayer synchronization in the game after updating.
 Game dumps, assemblies, local reverse engineering tools and generated binaries are excluded from source control.
 
-## Embed in the game EXE
+## Optional local embedding workflow for developers
 
-Close the game and use the original x64 game EXE as input. Generate a candidate package first:
+The repository also includes a script for testing an embedded copy of the locally installed game EXE. Close the game and use the original x64 EXE to generate a candidate.
 
 ```powershell
 ./scripts/embed-game.ps1 -GameExecutable 'D:/Steam/steamapps/common/Phasmophobia/Phasmophobia.exe' -DumpPath 'D:/dumps/latest.cs' -PackageOnly

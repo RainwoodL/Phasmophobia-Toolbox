@@ -5,7 +5,7 @@
 | 文档 | 用途 |
 | --- | --- |
 | [中文入门](../README.md) | 功能、快捷键、构建、运行和嵌入部署 |
-| [发行包使用说明](release-embedded.md) | 同一 ZIP 的注入与嵌入入口、更新和恢复 |
+| [发行包使用说明](release-embedded.md) | ZIP 中两份 EXE 的使用方法、原版备份与恢复 |
 | [注入使用说明](release-injector.md) | 独立注入器的路径、使用步骤与快捷键 |
 | [更新记录](../CHANGELOG.md) | 公开版本的主要变化 |
 | [2026-11-25 游戏兼容核对](game-update-2026-11-25.md) | Steam build 26893244 的字段和方法差异、昵称与猎杀数据显示、房主鬼速同步 |
@@ -21,8 +21,8 @@
 4. 先生成仅打包候选，再在游戏内确认菜单、猎杀、计时、地图切换和联机行为。
 
 `payload/` 通过 IL2CPP API 动态解析字段与方法，少量固定偏移仍需要每次更新复核。
-`injector/gen_payload.cpp` 将原始 DLL 写为 C++ 字节数组，独立注入器交给现有 PE 加载器。
-游戏 EXE 嵌入由 `tools/pe_embed.cpp` 与 `scripts/embed-game.ps1` 完成；文件来源与备份哈希保留在清单中。
+`scripts/package-release.ps1` 将项目构建的独立注入器和嵌入式启动程序打成一个 ZIP。
+开发者也可用 `tools/pe_embed.cpp` 与 `scripts/embed-game.ps1` 在本机生成原版游戏 EXE 的嵌入副本，清单记录文件来源与备份哈希。
 
 ## 历史记录
 

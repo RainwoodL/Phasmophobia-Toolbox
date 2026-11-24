@@ -1,0 +1,40 @@
+#include <winres.h>
+
+TOOLSBOX_LICENSE RCDATA "@CMAKE_SOURCE_DIR@/LICENSE"
+IMGUI_LICENSE RCDATA "@CMAKE_SOURCE_DIR@/imgui/LICENSE.txt"
+DETOURS_LICENSE RCDATA "@CMAKE_SOURCE_DIR@/third_party/detours/LICENSE.md"
+THIRD_PARTY_NOTICES RCDATA "@CMAKE_SOURCE_DIR@/THIRD_PARTY_NOTICES.md"
+
+#ifdef TOOLSBOX_INJECTOR
+#define DISTRIBUTION_NAME "Toolsbox.exe"
+#define DISTRIBUTION_DESCRIPTION "Phasmophobia Toolbox standalone injector"
+#else
+101 ICON "@CMAKE_SOURCE_DIR@/resource/favicon.ico"
+#define DISTRIBUTION_NAME "Phasmophobia.exe"
+#define DISTRIBUTION_DESCRIPTION "Phasmophobia Toolbox embedded HUD launcher"
+#endif
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION @PROJECT_VERSION_MAJOR@,@PROJECT_VERSION_MINOR@,@PROJECT_VERSION_PATCH@,0
+ PRODUCTVERSION @PROJECT_VERSION_MAJOR@,@PROJECT_VERSION_MINOR@,@PROJECT_VERSION_PATCH@,0
+ FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+ FILEOS VOS_NT_WINDOWS32
+ FILETYPE VFT_APP
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "CompanyName", "RainwoodL"
+            VALUE "FileDescription", DISTRIBUTION_DESCRIPTION
+            VALUE "FileVersion", "@PROJECT_VERSION@"
+            VALUE "OriginalFilename", DISTRIBUTION_NAME
+            VALUE "ProductName", "Phasmophobia Toolbox"
+            VALUE "ProductVersion", "@PROJECT_VERSION@"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0409, 1200
+    END
+END
